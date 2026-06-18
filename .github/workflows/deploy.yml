@@ -2,7 +2,7 @@ name: Deploy
 
 on:
   push:
-    branches:
+    tags:
       - 'v*'
 
 permissions:
@@ -27,12 +27,11 @@ jobs:
       - name: Build self-contained HTML
         run: python build.py
 
-      - name: Read version
+      - name: Read version from tag
         id: ver
         run: |
-          slug="v$(cat VERSION | tr -d '[:space:]')"
-          echo "slug=$slug" >> $GITHUB_OUTPUT
-          echo "Deploying as $slug"
+          echo "slug=${{ github.ref_name }}" >> $GITHUB_OUTPUT
+          echo "Deploying as ${{ github.ref_name }}"
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v4
