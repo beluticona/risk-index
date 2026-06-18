@@ -1,0 +1,43 @@
+name: Deploy
+
+on:
+  push:
+    branches:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install build dependencies
+        run: pip install pandas openpyxl
+
+      - name: Build self-contained HTML
+        run: python build.py
+
+      - name: Read version
+        id: ver
+        run: |
+          slug="v$(cat VERSION | tr -d '[:space:]')"
+          echo "slug=$slug" >> $GITHUB_OUTPUT
+          echo "Deploying as $slug"
+
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: dist
+          destination_dir: ${{ steps.ver.outputs.slug }}
+          keep_files: true

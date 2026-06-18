@@ -1,0 +1,267 @@
+<!doctype html>
+<html>
+  <head lang="en">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>LT4CR LineUp Index Explorer</title>
+    <link href="https://unpkg.com/lineupjs@4.16.0/build/LineUpJS.css" rel="stylesheet" />
+    <style>
+      :root {
+        color-scheme: light;
+        --bg: #f7f8fa;
+        --panel: #ffffff;
+        --border: #d9dee7;
+        --text: #1f2933;
+        --muted: #566372;
+        --accent: #276ef1;
+      }
+
+      html,
+      body {
+        height: 100%;
+        margin: 0;
+      }
+
+      body {
+        background: var(--bg);
+        color: var(--text);
+        display: flex;
+        flex-direction: column;
+        font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      }
+
+      header {
+        background: var(--panel);
+        border-bottom: 1px solid var(--border);
+        padding: 14px 18px;
+      }
+
+      .topline {
+        align-items: baseline;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+      }
+
+      h1 {
+        font-size: 18px;
+        font-weight: 700;
+        letter-spacing: 0;
+        margin: 0;
+      }
+
+      #status {
+        color: var(--muted);
+        font-size: 13px;
+      }
+
+      .pillars {
+        display: grid;
+        gap: 8px;
+        grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+        margin-top: 12px;
+      }
+
+      .pillar {
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        background: #fbfcfe;
+        padding: 10px 12px;
+      }
+
+      .pillar strong {
+        display: block;
+        font-size: 13px;
+      }
+
+      .pillar span {
+        color: var(--muted);
+        display: block;
+        font-size: 12px;
+        line-height: 1.35;
+        margin-top: 3px;
+      }
+
+      .note {
+        color: var(--muted);
+        font-size: 13px;
+        line-height: 1.4;
+        margin: 10px 0 0;
+        max-width: 980px;
+      }
+
+      #lineup {
+        background: var(--panel);
+        flex: 1 1 auto;
+        min-height: 0;
+      }
+
+      .error {
+        color: #a12222;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <div class="topline">
+        <h1>LT4CR LineUp Index Explorer</h1>
+        <span id="status">Loading Final_Index.csv</span>
+      </div>
+      <p class="note">
+        This prototype keeps the full LineUp ranking available, but frames the index through its five
+        pillars first. Use the ranking to sort, group, filter, and inspect language-country pairs.
+      </p>
+      <div class="pillars" aria-label="Index pillars">
+        <div class="pillar">
+          <strong>Linguistic Indicators</strong>
+          <span>Speaker scale, diversity, status, and related language access context.</span>
+        </div>
+        <div class="pillar">
+          <strong>Crisis Risk Indicators</strong>
+          <span>Active risks, hazard drivers, and severity signals that raise priority.</span>
+        </div>
+        <div class="pillar">
+          <strong>Communications and Technology</strong>
+          <span>Digital support, app accessibility, ICT capacity, and media conditions.</span>
+        </div>
+        <div class="pillar">
+          <strong>Language Technology</strong>
+          <span>Training data, validated hours, articles, users, datasets, and models.</span>
+        </div>
+        <div class="pillar">
+          <strong>Social and Economic</strong>
+          <span>Human development, education, literacy, and economic constraints.</span>
+        </div>
+      </div>
+    </header>
+    <main id="lineup"></main>
+    <script src="https://unpkg.com/lineupjs@4.16.0/build/LineUpJS.js"></script>
+    <script>
+      function parseCsv(text) {
+        const rows = [];
+        let row = [];
+        let value = "";
+        let quoted = false;
+
+        for (let index = 0; index < text.length; index += 1) {
+          const char = text[index];
+          const next = text[index + 1];
+
+          if (quoted) {
+            if (char === '"' && next === '"') {
+              value += '"';
+              index += 1;
+            } else if (char === '"') {
+              quoted = false;
+            } else {
+              value += char;
+            }
+          } else if (char === '"') {
+            quoted = true;
+          } else if (char === ",") {
+            row.push(value);
+            value = "";
+          } else if (char === "\n") {
+            row.push(value);
+            rows.push(row);
+            row = [];
+            value = "";
+          } else if (char !== "\r") {
+            value += char;
+          }
+        }
+
+        if (value.length > 0 || row.length > 0) {
+          row.push(value);
+          rows.push(row);
+        }
+
+        const headers = rows.shift();
+        return rows
+          .filter((cells) => cells.some((cell) => cell !== ""))
+          .map((cells) =>
+            headers.reduce((record, header, index) => {
+              record[header] = cells[index] ?? "";
+              return record;
+            }, {})
+          );
+      }
+
+      function isNumberValue(value) {
+        if (value === "" || value === "NA" || value === "NaN") {
+          return true;
+        }
+        return Number.isFinite(Number(value));
+      }
+
+      function prepareColumns(records) {
+        const columns = Object.keys(records[0]);
+        const converted = records.map((record) => ({ ...record }));
+        const descriptions = columns.map((column) => {
+          const values = records.map((record) => record[column]);
+          const numeric = values.every(isNumberValue);
+
+          if (numeric) {
+            const numbers = values.filter((value) => value !== "" && value !== "NA" && value !== "NaN").map(Number);
+            const min = Math.min(...numbers);
+            const max = Math.max(...numbers);
+            converted.forEach((record) => {
+              const value = record[column];
+              record[column] = value === "" || value === "NA" || value === "NaN" ? null : Number(value);
+            });
+            return { column, type: "number", domain: [min, max] };
+          }
+
+          const categories = Array.from(new Set(values.filter(Boolean))).sort();
+          if (categories.length > 1 && categories.length <= 40) {
+            return { column, type: "categorical", categories };
+          }
+
+          return { column, type: "string" };
+        });
+
+        return { converted, descriptions };
+      }
+
+      function buildLineUp(records) {
+        const { converted, descriptions } = prepareColumns(records);
+        const provider = new LineUpJS.LocalDataProvider(converted, descriptions);
+        provider.deriveDefault();
+
+        const ranking = provider.getLastRanking();
+        const findColumn = (column) => ranking.find((candidate) => candidate.desc && candidate.desc.column === column);
+        const weightedIndex = findColumn("weighted_index");
+        const region = findColumn("Region");
+
+        if (weightedIndex) {
+          ranking.sortBy(weightedIndex, false);
+        }
+
+        if (region) {
+          ranking.groupBy(region);
+        }
+
+        const lineup = new LineUpJS.Taggle(document.querySelector("#lineup"), provider);
+        lineup.update();
+      }
+
+      (window.__BAKED_CSV__
+        ? Promise.resolve(window.__BAKED_CSV__)
+        : fetch("/data/Final_Index.csv").then((r) => {
+            if (!r.ok) throw new Error(`HTTP ${r.status}`);
+            return r.text();
+          })
+      )
+        .then((text) => {
+          const records = parseCsv(text);
+          buildLineUp(records);
+          document.querySelector("#status").textContent = `${records.length.toLocaleString()} rows`;
+        })
+        .catch((error) => {
+          const status = document.querySelector("#status");
+          status.className = "error";
+          status.textContent = `Could not load data: ${error.message}`;
+        });
+    </script>
+  </body>
+</html>
