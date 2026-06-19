@@ -259,7 +259,8 @@
     <li><a href="#viz-f">F. Inferred weights</a></li>
 
     <li class="section">Version History</li>
-    <li><a href="#version-v051">v0.5.1 — current</a></li>
+    <li><a href="#version-v052">v0.5.2 — current</a></li>
+    <li><a href="#version-v051">v0.5.1 — reliability panel</a></li>
     <li><a href="#version-v05">v0.5 — UX polish</a></li>
     <li><a href="#version-v03">v0.3 — precomputed data</a></li>
     <li><a href="#version-v02">v0.2 — two-level</a></li>
@@ -281,7 +282,7 @@
 
   <div class="callout callout-info">
     <strong>Where things stand:</strong>
-    The <strong>LineUp.js explorer (v0.5.1)</strong> is deployed on GitHub Pages and is the current
+    The <strong>LineUp.js explorer (v0.5.2)</strong> is deployed on GitHub Pages and is the current
     working tool. A <strong>Streamlit + Claude API app</strong> with maps, LLM narrative, and
     counterfactual analysis is planned next. This document covers both.
   </div>
@@ -318,8 +319,8 @@
   <h2>Quick start</h2>
 
   <h3>Access the deployed tool</h3>
-  <p>The v0.5.1 explorer is live on GitHub Pages. Open it in any modern browser:</p>
-  <div class="file-tree">https://beluticona.github.io/risk-index/v0.5.1/</div>
+  <p>The v0.5.2 explorer is live on GitHub Pages. Open it in any modern browser:</p>
+  <div class="file-tree">https://beluticona.github.io/risk-index/v0.5.2/</div>
 
   <h3>Run locally</h3>
   <p>The explorer works without any build step — <code>serve.py</code> converts the Excel file to CSV on the fly:</p>
@@ -352,7 +353,7 @@ python serve.py           <span class="note"># starts local server at http://127
   </div>
 
   <!-- ── Current Explorer ──────────────────────────────────────────────────── -->
-  <div class="section-divider">Current Explorer — v0.5.1 (shipped)</div>
+  <div class="section-divider">Current Explorer — v0.5.2 (shipped)</div>
 
   <span class="section-anchor" id="explorer-features"></span>
   <h2>How the explorer works</h2>
@@ -1603,9 +1604,47 @@ python-dotenv>=1.0</pre>
   <!-- ── VERSION HISTORY ───────────────────────────────────────────────────── -->
   <div class="section-divider">Version History</div>
 
+  <!-- ── v0.5.2 ─────────────────────────────────────────────────────────────── -->
+  <span class="section-anchor" id="version-v052"></span>
+  <h2>v0.5.2 — Weight tool improvements <span class="badge badge-green" style="font-size:12px;vertical-align:middle">shipped</span></h2>
+
+  <p>
+    Two improvements to the pillar weight controls, making the current weighting more visible
+    and precise weight entry easier.
+  </p>
+
+  <h3>What changed from v0.5.1</h3>
+  <table>
+    <thead><tr><th>Area</th><th>Before</th><th>v0.5.2</th></tr></thead>
+    <tbody>
+      <tr>
+        <td>Weight composition strip</td>
+        <td>No visual summary of the current weight distribution</td>
+        <td>A full-width colored bar at the top of the weight section shows all five pillar
+          weights as proportional segments. Updates live as sliders are dragged. Fixed
+          (locked) segments show a diagonal hatching pattern.</td>
+      </tr>
+      <tr>
+        <td>Number inputs</td>
+        <td>A read-only <code>%</code> label showed the current value — no way to type
+          an exact weight</td>
+        <td>Each pillar now has an editable number input alongside the slider. Type a value
+          and press Enter (or Tab) to apply it; redistribution among unfixed pillars
+          happens immediately.</td>
+      </tr>
+      <tr>
+        <td>Fix/lock weights</td>
+        <td>Moving any slider redistributed weight across <em>all</em> other pillars</td>
+        <td>A <strong>fix</strong> button per pillar locks its weight. Locked pillars are
+          skipped during redistribution; the moved slider is clamped so the sum always
+          stays at 100%. <strong>Reset</strong> clears all locks and restores defaults.</td>
+      </tr>
+    </tbody>
+  </table>
+
   <!-- ── v0.5.1 ─────────────────────────────────────────────────────────────── -->
   <span class="section-anchor" id="version-v051"></span>
-  <h2>v0.5.1 — Data reliability panel <span class="badge badge-green" style="font-size:12px;vertical-align:middle">shipped</span></h2>
+  <h2>v0.5.1 — Data reliability panel <span class="badge badge-blue" style="font-size:12px;vertical-align:middle">superseded</span></h2>
 
   <p>
     Adds two reliability-focused features on top of v0.5. No data changes, no structural changes —

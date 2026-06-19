@@ -378,6 +378,39 @@
         white-space: nowrap;
       }
 
+      #weight-strip {
+        border-radius: 4px;
+        display: flex;
+        flex-basis: 100%;
+        height: 20px;
+        margin-bottom: 2px;
+        overflow: hidden;
+      }
+
+      .wstrip-seg {
+        align-items: center;
+        color: rgba(255,255,255,0.9);
+        display: flex;
+        font-size: 9px;
+        font-weight: 700;
+        justify-content: center;
+        letter-spacing: 0.04em;
+        overflow: hidden;
+        text-transform: uppercase;
+        transition: flex 0.18s ease;
+        white-space: nowrap;
+      }
+
+      .wstrip-seg.is-locked {
+        background-image: repeating-linear-gradient(
+          45deg,
+          rgba(0,0,0,0.10) 0px,
+          rgba(0,0,0,0.10) 3px,
+          transparent 3px,
+          transparent 7px
+        );
+      }
+
       .w-slider {
         -webkit-appearance: none;
         accent-color: var(--pillar-color, var(--accent));
@@ -386,12 +419,74 @@
         width: 80px;
       }
 
+      .w-input {
+        background: var(--bg);
+        border: 1px solid var(--border);
+        border-radius: 3px;
+        font-size: 11px;
+        font-variant-numeric: tabular-nums;
+        -moz-appearance: textfield;
+        padding: 1px 3px;
+        text-align: right;
+        width: 34px;
+      }
+
+      .w-input::-webkit-outer-spin-button,
+      .w-input::-webkit-inner-spin-button { -webkit-appearance: none; appearance: none; }
+
+      .w-input:focus { border-color: var(--accent); outline: none; }
+
+      .w-input:disabled {
+        background: #f0f0f0;
+        cursor: not-allowed;
+        opacity: 0.5;
+      }
+
+      .w-pct {
+        color: var(--muted);
+        font-size: 11px;
+      }
+
       .w-val {
         color: var(--muted);
         font-size: 11px;
         font-variant-numeric: tabular-nums;
         min-width: 30px;
         text-align: right;
+      }
+
+      .w-lock {
+        background: none;
+        border: 1px solid var(--border);
+        border-radius: 3px;
+        color: var(--muted);
+        cursor: pointer;
+        flex-shrink: 0;
+        font-size: 10px;
+        font-weight: 700;
+        letter-spacing: 0.04em;
+        padding: 1px 5px;
+        text-transform: uppercase;
+        transition: background 0.12s, border-color 0.12s, color 0.12s;
+        white-space: nowrap;
+      }
+
+      .w-lock:hover { border-color: var(--text); color: var(--text); }
+
+      .w-lock.locked {
+        background: var(--pillar-color, var(--accent));
+        border-color: var(--pillar-color, var(--accent));
+        color: #fff;
+      }
+
+      .w-slider:disabled {
+        cursor: not-allowed;
+        opacity: 0.3;
+      }
+
+      .weight-group.is-locked .w-val {
+        color: var(--text);
+        font-weight: 700;
       }
 
       .w-total {
@@ -796,6 +891,7 @@
         </div>
       </div>
       <div id="weight-bar">
+        <div id="weight-strip"></div>
         <span class="weight-label">Weights</span>
         <!-- slider groups injected by JS -->
         <span id="w-total" class="w-total"></span>
@@ -1170,6 +1266,7 @@
       let currentMode = "overview";
       let currentProvider = null;
       let coverageCache = {};
+      const lockedWeights = new Set();
 
       function computeCoverage(records) {
         const cache = {};
@@ -1205,15 +1302,27 @@
 
       function applyWeightChange(changedKey, newVal) {
         newVal = Math.max(0, Math.min(100, newVal));
-        const others = PILLARS.filter((p) => p.key !== changedKey);
-        const otherSum = others.reduce((s, p) => s + currentWeights[p.key], 0);
-        const remaining = 100 - newVal;
 
-        if (otherSum > 0) {
+        // How much weight is frozen in locked pillars (not including changedKey)
+        const lockedSum = PILLARS
+          .filter((p) => p.key !== changedKey && lockedWeights.has(p.key))
+          .reduce((s, p) => s + currentWeights[p.key], 0);
+
+        // Clamp so locked + moved never exceeds 100
+        newVal = Math.min(newVal, 100 - lockedSum);
+
+        // Free pillars: unlocked and not the one being moved
+        const free = PILLARS.filter((p) => p.key !== changedKey && !lockedWeights.has(p.key));
+        const freeSum = free.reduce((s, p) => s + currentWeights[p.key], 0);
+        const remaining = (100 - lockedSum) - newVal;
+
+        if (free.length === 0) {
+          // All siblings locked — just apply the clamp, nothing to redistribute
+        } else if (freeSum > 0) {
           let distributed = 0;
-          others.forEach((p, i) => {
-            if (i < others.length - 1) {
-              const v = Math.round(currentWeights[p.key] * remaining / otherSum);
+          free.forEach((p, i) => {
+            if (i < free.length - 1) {
+              const v = Math.round(currentWeights[p.key] * remaining / freeSum);
               currentWeights[p.key] = v;
               distributed += v;
             } else {
@@ -1221,15 +1330,14 @@
             }
           });
         } else {
-          // All others are 0 — split remaining equally
-          const share = Math.floor(remaining / others.length);
-          others.forEach((p, i) => {
-            currentWeights[p.key] = share + (i < remaining % others.length ? 1 : 0);
+          // Free pillars are all 0 — split equally
+          const share = Math.floor(remaining / free.length);
+          free.forEach((p, i) => {
+            currentWeights[p.key] = share + (i < remaining % free.length ? 1 : 0);
           });
         }
         currentWeights[changedKey] = newVal;
 
-        // Ensure none went negative (rounding edge cases)
         PILLARS.forEach((p) => {
           currentWeights[p.key] = Math.max(0, currentWeights[p.key]);
         });
@@ -1239,12 +1347,30 @@
         if (allRecords) setMode(currentMode);
       }
 
+      function updateWeightStrip() {
+        PILLARS.forEach((p) => {
+          const seg = document.querySelector(`.wstrip-seg[data-key="${p.key}"]`);
+          if (!seg) return;
+          seg.style.flex = `${currentWeights[p.key]} 0 0`;
+          seg.classList.toggle("is-locked", lockedWeights.has(p.key));
+        });
+      }
+
       function syncWeightUI() {
         PILLARS.forEach((p) => {
-          const slider = document.querySelector(`.w-slider[data-key="${p.key}"]`);
-          const label  = document.querySelector(`.w-val[data-key="${p.key}"]`);
-          if (slider) slider.value = currentWeights[p.key];
-          if (label)  label.textContent = `${currentWeights[p.key]}%`;
+          const isLocked = lockedWeights.has(p.key);
+          const slider   = document.querySelector(`.w-slider[data-key="${p.key}"]`);
+          const input    = document.querySelector(`.w-input[data-key="${p.key}"]`);
+          const lockBtn  = document.querySelector(`.w-lock[data-key="${p.key}"]`);
+          const group    = document.querySelector(`.weight-group[data-key="${p.key}"]`);
+
+          if (slider) { slider.value = currentWeights[p.key]; slider.disabled = isLocked; }
+          if (input)  { input.value  = currentWeights[p.key]; input.disabled  = isLocked; }
+          if (lockBtn) {
+            lockBtn.textContent = isLocked ? "fixed" : "fix";
+            lockBtn.classList.toggle("locked", isLocked);
+          }
+          if (group) group.classList.toggle("is-locked", isLocked);
         });
         const total = Object.values(currentWeights).reduce((a, b) => a + b, 0);
         const el = document.getElementById("w-total");
@@ -1252,14 +1378,29 @@
           el.textContent = `= ${total}%`;
           el.className = `w-total ${total === 100 ? "ok" : "warn"}`;
         }
+        updateWeightStrip();
       }
 
       function buildWeightBar() {
         const bar = document.getElementById("weight-bar");
         const totalEl = document.getElementById("w-total");
+
+        // Build composition strip segments
+        const strip = document.getElementById("weight-strip");
+        PILLARS.forEach((p) => {
+          const seg = document.createElement("div");
+          seg.className = "wstrip-seg";
+          seg.dataset.key = p.key;
+          seg.style.background = p.color;
+          seg.style.flex = `${p.defaultWeight} 0 0`;
+          seg.textContent = p.label;
+          strip.appendChild(seg);
+        });
+
         PILLARS.forEach((p) => {
           const group = document.createElement("div");
           group.className = "weight-group";
+          group.dataset.key = p.key;
 
           const dot = document.createElement("span");
           dot.className = "w-dot";
@@ -1282,18 +1423,44 @@
             applyWeightChange(p.key, Number(e.target.value));
           });
 
-          const val = document.createElement("span");
-          val.className = "w-val";
-          val.dataset.key = p.key;
-          val.textContent = `${p.defaultWeight}%`;
+          const input = document.createElement("input");
+          input.type = "number";
+          input.className = "w-input";
+          input.dataset.key = p.key;
+          input.min = 0;
+          input.max = 100;
+          input.value = p.defaultWeight;
+          input.addEventListener("change", (e) => {
+            applyWeightChange(p.key, Number(e.target.value));
+          });
+          input.addEventListener("keydown", (e) => {
+            if (e.key === "Enter") e.target.blur();
+          });
 
-          group.append(dot, name, slider, val);
+          const pct = document.createElement("span");
+          pct.className = "w-pct";
+          pct.textContent = "%";
+
+          const lockBtn = document.createElement("button");
+          lockBtn.className = "w-lock";
+          lockBtn.dataset.key = p.key;
+          lockBtn.textContent = "fix";
+          lockBtn.title = "Fix this weight — it won't change when others are adjusted";
+          lockBtn.style.setProperty("--pillar-color", p.color);
+          lockBtn.addEventListener("click", () => {
+            if (lockedWeights.has(p.key)) lockedWeights.delete(p.key);
+            else lockedWeights.add(p.key);
+            syncWeightUI();
+          });
+
+          group.append(dot, name, slider, input, pct, lockBtn);
           bar.insertBefore(group, totalEl);
         });
         syncWeightUI();
 
         document.getElementById("btn-reset-weights").addEventListener("click", () => {
           PILLARS.forEach((p) => { currentWeights[p.key] = p.defaultWeight; });
+          lockedWeights.clear();
           syncWeightUI();
           recomputeWeightedIndex();
           if (allRecords) setMode(currentMode);
