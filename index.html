@@ -338,6 +338,82 @@
 
       .missing { color: #999; font-style: italic; }
 
+      /* ── Weight bar ── */
+      #weight-bar {
+        align-items: center;
+        border-top: 1px solid var(--border);
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px 16px;
+        margin-top: 8px;
+        padding-top: 8px;
+      }
+
+      .weight-label {
+        color: var(--muted);
+        font-size: 11px;
+        font-weight: 600;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        white-space: nowrap;
+      }
+
+      .weight-group {
+        align-items: center;
+        display: flex;
+        gap: 5px;
+      }
+
+      .w-dot {
+        border-radius: 50%;
+        flex-shrink: 0;
+        height: 8px;
+        width: 8px;
+      }
+
+      .w-name {
+        color: var(--text);
+        font-size: 12px;
+        white-space: nowrap;
+      }
+
+      .w-slider {
+        -webkit-appearance: none;
+        accent-color: var(--pillar-color, var(--accent));
+        cursor: pointer;
+        height: 4px;
+        width: 80px;
+      }
+
+      .w-val {
+        color: var(--muted);
+        font-size: 11px;
+        font-variant-numeric: tabular-nums;
+        min-width: 30px;
+        text-align: right;
+      }
+
+      .w-total {
+        color: var(--muted);
+        font-size: 11px;
+        margin-left: 4px;
+      }
+
+      .w-total.ok   { color: #27ae60; }
+      .w-total.warn { color: #e67e22; }
+
+      #btn-reset-weights {
+        background: none;
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        color: var(--muted);
+        cursor: pointer;
+        font-size: 11px;
+        padding: 2px 8px;
+      }
+
+      #btn-reset-weights:hover { background: #f0f2f5; color: var(--text); }
+
       /* ── LineUp overrides ── */
       .lu-col-header,
       .lu-col-header .lu-label,
@@ -368,6 +444,12 @@
           <button id="btn-overview" class="mode-btn active">Overview mode</button>
         </div>
       </div>
+      <div id="weight-bar">
+        <span class="weight-label">Weights</span>
+        <!-- slider groups injected by JS -->
+        <span id="w-total" class="w-total"></span>
+        <button id="btn-reset-weights">Reset</button>
+      </div>
     </header>
 
     <div id="app">
@@ -392,6 +474,7 @@
           normCol: "Linguistic_Indicators_norm",
           level: "language",
           color: "#3498db",
+          defaultWeight: 20,
           subCols: [
             {
               col: "total_speakers_norm",
@@ -420,6 +503,7 @@
           normCol: "Crisis_Risk_Indicators_norm",
           level: "country",
           color: "#e74c3c",
+          defaultWeight: 25,
           subCols: [
             {
               col: "INFORM Severity Index_norm",
@@ -457,6 +541,7 @@
           normCol: "Communications_and_Technology_Indicators_norm",
           level: "country",
           color: "#9b59b6",
+          defaultWeight: 15,
           subCols: [
             {
               col: "MCI_Index_inv_norm",
@@ -503,6 +588,7 @@
           normCol: "Language_Technology_Indicators_norm",
           level: "language",
           color: "#1abc9c",
+          defaultWeight: 25,
           subCols: [
             {
               col: "Recorded Hours_inv_norm",
@@ -576,6 +662,7 @@
           normCol: "Social_and_Economic_Indicators_norm",
           level: "country",
           color: "#f39c12",
+          defaultWeight: 15,
           subCols: [
             {
               col: "GDP_2015_inv_norm",
@@ -681,6 +768,121 @@
       let currentMode = "overview";
       let currentProvider = null;
 
+      // Weights — integers 0-100, always sum to 100
+      const currentWeights = Object.fromEntries(
+        PILLARS.map((p) => [p.key, p.defaultWeight])
+      );
+
+      // ── Weight bar ───────────────────────────────────────────────────────────
+
+      function recomputeWeightedIndex() {
+        if (!allRecords) return;
+        const total = Object.values(currentWeights).reduce((a, b) => a + b, 0);
+        if (total <= 0) return;
+        allRecords.forEach((rec) => {
+          rec.weighted_index = PILLARS.reduce((sum, p) => {
+            return sum + (rec[p.normCol] ?? 0) * currentWeights[p.key] / total;
+          }, 0);
+        });
+      }
+
+      function applyWeightChange(changedKey, newVal) {
+        newVal = Math.max(0, Math.min(100, newVal));
+        const others = PILLARS.filter((p) => p.key !== changedKey);
+        const otherSum = others.reduce((s, p) => s + currentWeights[p.key], 0);
+        const remaining = 100 - newVal;
+
+        if (otherSum > 0) {
+          let distributed = 0;
+          others.forEach((p, i) => {
+            if (i < others.length - 1) {
+              const v = Math.round(currentWeights[p.key] * remaining / otherSum);
+              currentWeights[p.key] = v;
+              distributed += v;
+            } else {
+              currentWeights[p.key] = remaining - distributed;
+            }
+          });
+        } else {
+          // All others are 0 — split remaining equally
+          const share = Math.floor(remaining / others.length);
+          others.forEach((p, i) => {
+            currentWeights[p.key] = share + (i < remaining % others.length ? 1 : 0);
+          });
+        }
+        currentWeights[changedKey] = newVal;
+
+        // Ensure none went negative (rounding edge cases)
+        PILLARS.forEach((p) => {
+          currentWeights[p.key] = Math.max(0, currentWeights[p.key]);
+        });
+
+        syncWeightUI();
+        recomputeWeightedIndex();
+        if (allRecords) setMode(currentMode);
+      }
+
+      function syncWeightUI() {
+        PILLARS.forEach((p) => {
+          const slider = document.querySelector(`.w-slider[data-key="${p.key}"]`);
+          const label  = document.querySelector(`.w-val[data-key="${p.key}"]`);
+          if (slider) slider.value = currentWeights[p.key];
+          if (label)  label.textContent = `${currentWeights[p.key]}%`;
+        });
+        const total = Object.values(currentWeights).reduce((a, b) => a + b, 0);
+        const el = document.getElementById("w-total");
+        if (el) {
+          el.textContent = `= ${total}%`;
+          el.className = `w-total ${total === 100 ? "ok" : "warn"}`;
+        }
+      }
+
+      function buildWeightBar() {
+        const bar = document.getElementById("weight-bar");
+        const totalEl = document.getElementById("w-total");
+        PILLARS.forEach((p) => {
+          const group = document.createElement("div");
+          group.className = "weight-group";
+
+          const dot = document.createElement("span");
+          dot.className = "w-dot";
+          dot.style.background = p.color;
+
+          const name = document.createElement("span");
+          name.className = "w-name";
+          name.textContent = p.label;
+
+          const slider = document.createElement("input");
+          slider.type = "range";
+          slider.className = "w-slider";
+          slider.dataset.key = p.key;
+          slider.min = 0;
+          slider.max = 100;
+          slider.step = 1;
+          slider.value = p.defaultWeight;
+          slider.style.setProperty("--pillar-color", p.color);
+          slider.addEventListener("input", (e) => {
+            applyWeightChange(p.key, Number(e.target.value));
+          });
+
+          const val = document.createElement("span");
+          val.className = "w-val";
+          val.dataset.key = p.key;
+          val.textContent = `${p.defaultWeight}%`;
+
+          group.append(dot, name, slider, val);
+          bar.insertBefore(group, totalEl);
+        });
+        syncWeightUI();
+
+        document.getElementById("btn-reset-weights").addEventListener("click", () => {
+          PILLARS.forEach((p) => { currentWeights[p.key] = p.defaultWeight; });
+          syncWeightUI();
+          recomputeWeightedIndex();
+          if (allRecords) setMode(currentMode);
+        });
+      }
+
       // ── CSV parser (unchanged from v0.1) ─────────────────────────────────────
 
       function parseCsv(text) {
@@ -770,56 +972,11 @@
         return { converted, descriptions };
       }
 
-      // ── Pillar contribution columns ──────────────────────────────────────────
-      //
-      // In the pipeline: sub-indicator norms are SUMMED into Pillar_Indicators,
-      // then min-maxed to Pillar_Indicators_norm.  The raw _inv_norm values therefore
-      // do NOT directly sum to the pillar score — only the intermediate sum does.
-      //
-      // To make the drill-down bars visually add up to the pillar score we compute
-      // per-row contribution weights:
-      //   contrib_i = (sub_inv_norm_i / sum_of_sub_inv_norms) × pillar_norm
-      // So: Σ contrib_i = pillar_norm  ✓
-      //
-      // These columns (key: `${sub.col}__contrib`) are added to allRecords and allDescs
-      // after the CSV is loaded.  The `__contrib` suffix is stripped when looking up
-      // COL_META so labels and colors are inherited from the underlying _norm column.
-
-      function computePillarContributions(records) {
-        PILLARS.forEach((pillar) => {
-          records.forEach((rec) => {
-            const pillarScore = rec[pillar.normCol] ?? 0;
-            const subVals = pillar.subCols.map((s) => rec[s.col] ?? 0);
-            const subSum = subVals.reduce((a, b) => a + b, 0);
-            pillar.subCols.forEach((sub, i) => {
-              rec[`${sub.col}__contrib`] =
-                subSum > 0 ? (subVals[i] / subSum) * pillarScore : 0;
-            });
-          });
-        });
-      }
-
-      function addContribDescs(records, descriptions) {
-        const extras = [];
-        PILLARS.forEach((pillar) => {
-          pillar.subCols.forEach((sub) => {
-            const base = descriptions.find((d) => d.column === sub.col);
-            if (!base) return;
-            const vals = records
-              .map((r) => r[`${sub.col}__contrib`])
-              .filter((v) => v !== null && !isNaN(v));
-            const maxVal = vals.length ? Math.max(...vals) : 0.2;
-            extras.push({
-              ...base,
-              column: `${sub.col}__contrib`,
-              domain: [0, maxVal || 0.01],
-            });
-          });
-        });
-        return [...descriptions, ...extras];
-      }
-
       // ── LineUp management ────────────────────────────────────────────────────
+      // Contribution columns (*_contrib) are precomputed by build_index.py and
+      // present in the CSV.  Drill-down mode uses them directly so the sub-indicator
+      // bars sum exactly to the pillar score shown in the overview.
+      // See CrisisVoices/index/build_index.py for the formula.
 
       function getColsForMode(mode) {
         if (mode === "overview") {
@@ -835,7 +992,7 @@
           ...CONTEXT_COLS,
           WEIGHTED_COL,
           pillar.normCol,
-          ...pillar.subCols.map((s) => `${s.col}__contrib`),
+          ...pillar.subCols.map((s) => `${s.col}_contrib`),
         ];
       }
 
@@ -851,9 +1008,9 @@
           .map((key) => {
             const base = allDescs.find((d) => d.column === key);
             if (!base) return null;
-            // __contrib cols inherit label/width/color from the underlying _norm col
-            const metaKey = key.endsWith("__contrib")
-              ? key.slice(0, -9)
+            // _contrib cols (from data) inherit label/width/color from underlying _norm col
+            const metaKey = key.endsWith("_contrib")
+              ? key.slice(0, -8)
               : key;
             const meta = COL_META[metaKey] || {};
             return {
@@ -955,7 +1112,7 @@
             .map((sub) => {
               const rawVal = record[sub.rawCol];
               const normVal = record[sub.col];
-              const contribVal = record[`${sub.col}__contrib`];
+              const contribVal = record[`${sub.col}_contrib`];
               const isNull =
                 rawVal === null ||
                 rawVal === undefined ||
@@ -1023,7 +1180,11 @@
               ${record.Region ?? ""} · <em>${record.status ?? ""}</em>
             </div>
             <div class="panel-score-row">
-              <span>Composite vulnerability score</span>
+              <span>Composite score
+                <span style="color:var(--muted);font-size:11px;font-weight:400">
+                  (${PILLARS.map(p => `${p.label.split(' ')[0]} ${currentWeights[p.key]}%`).join(' · ')})
+                </span>
+              </span>
               <strong>${score}</strong>
             </div>
           </div>
@@ -1032,6 +1193,9 @@
       }
 
       // ── Init ─────────────────────────────────────────────────────────────────
+
+      // Build weight bar
+      buildWeightBar();
 
       // Inject pillar drill-down buttons
       const modeBar = document.querySelector("#mode-bar");
@@ -1070,9 +1234,9 @@
         .then((text) => {
           const records = parseCsv(text);
           const { converted, descriptions } = prepareColumns(records);
-          computePillarContributions(converted);
           allRecords = converted;
-          allDescs = addContribDescs(converted, descriptions);
+          allDescs = descriptions;
+          recomputeWeightedIndex();
           setMode("overview");
           document.querySelector("#status").textContent = `${records.length.toLocaleString()} rows`;
         })
