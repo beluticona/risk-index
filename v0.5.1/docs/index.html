@@ -1,0 +1,1821 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LT4CR Explorer — Project Guide</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    margin: 0; padding: 0; color: #2c3e50; background: #f5f6fa;
+    font-size: 15px; line-height: 1.6;
+  }
+  a { color: #2980b9; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+
+  /* Layout */
+  .page { display: flex; min-height: 100vh; }
+  nav {
+    width: 240px; min-width: 240px; background: #2c3e50; color: #ecf0f1;
+    padding: 28px 0; position: sticky; top: 0; height: 100vh; overflow-y: auto;
+  }
+  nav .logo { font-size: 13px; font-weight: 700; color: #fff; padding: 0 20px 24px;
+              border-bottom: 1px solid rgba(255,255,255,.1); text-transform: uppercase; letter-spacing: 1px; }
+  nav ul { list-style: none; margin: 0; padding: 12px 0; }
+  nav ul li a {
+    display: block; padding: 7px 20px; color: #bdc3c7; font-size: 13px;
+    transition: background .15s, color .15s;
+  }
+  nav ul li a:hover, nav ul li a.active { background: rgba(255,255,255,.08); color: #fff; text-decoration: none; }
+  nav ul li.section { padding: 16px 20px 4px; font-size: 10px; font-weight: 700;
+                      color: #7f8c8d; text-transform: uppercase; letter-spacing: 1px; }
+  main { flex: 1; min-width: 0; padding: 40px 48px; max-width: 900px; }
+
+  /* Headings */
+  h1 { font-size: 28px; margin: 0 0 6px; color: #2c3e50; }
+  h2 { font-size: 20px; color: #2c3e50; border-bottom: 2px solid #e0e0e0;
+       padding-bottom: 8px; margin-top: 48px; }
+  h3 { font-size: 16px; color: #34495e; margin-top: 28px; }
+  .subtitle { color: #7f8c8d; font-size: 14px; margin-bottom: 32px; }
+
+  /* Feature cards */
+  .features { display: flex; gap: 12px; flex-wrap: wrap; margin: 20px 0; }
+  .feature-card {
+    flex: 1; min-width: 160px; background: #fff; border-radius: 10px;
+    padding: 16px; box-shadow: 0 1px 4px rgba(0,0,0,.08); border-top: 4px solid;
+  }
+  .feature-card .num { font-size: 26px; font-weight: 700; }
+  .feature-card .name { font-size: 13px; color: #555; margin-top: 4px; }
+  .f1 { border-color: #3498db; } .f1 .num { color: #3498db; }
+  .f2 { border-color: #e74c3c; } .f2 .num { color: #e74c3c; }
+  .f3 { border-color: #9b59b6; } .f3 .num { color: #9b59b6; }
+  .f4 { border-color: #1abc9c; } .f4 .num { color: #1abc9c; }
+
+  /* Tab cards */
+  .tabs { display: flex; gap: 12px; flex-wrap: wrap; margin: 20px 0; }
+  .tab-card {
+    flex: 1; min-width: 150px; background: #fff; border-radius: 10px;
+    padding: 16px; box-shadow: 0 1px 4px rgba(0,0,0,.08); border-top: 4px solid #f39c12;
+  }
+  .tab-card .tab-num { font-size: 22px; font-weight: 700; color: #f39c12; }
+  .tab-card .tab-name { font-weight: 600; font-size: 14px; margin: 4px 0 6px; }
+  .tab-card .tab-detail { font-size: 12px; color: #666; }
+
+  /* Tables */
+  table { width: 100%; border-collapse: collapse; background: #fff;
+          border-radius: 8px; overflow: hidden; box-shadow: 0 1px 4px rgba(0,0,0,.08);
+          margin: 16px 0; }
+  th { background: #34495e; color: #fff; padding: 10px 13px;
+       font-size: 12px; text-align: left; font-weight: 600; }
+  td { padding: 9px 13px; font-size: 13px; border-bottom: 1px solid #f0f0f0; vertical-align: top; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: #fafafa; }
+  td code { background: #f0f0f0; padding: 1px 5px; border-radius: 3px; font-size: 12px; }
+
+  /* Code blocks */
+  pre {
+    background: #1e1e2e; color: #cdd6f4; padding: 16px 20px; border-radius: 8px;
+    font-size: 13px; overflow-x: auto; margin: 12px 0;
+  }
+  code { font-family: "SF Mono", "Fira Code", monospace; }
+  .inline-code { background: #eef; padding: 1px 6px; border-radius: 3px;
+                 font-size: 13px; font-family: "SF Mono", "Fira Code", monospace; color: #2c3e50; }
+
+  /* Badges */
+  .badge {
+    display: inline-block; padding: 2px 9px; border-radius: 12px;
+    font-size: 11px; font-weight: 700; vertical-align: middle;
+  }
+  .badge-green  { background: #d5f5e3; color: #1e8449; }
+  .badge-blue   { background: #d6eaf8; color: #1a5276; }
+  .badge-orange { background: #fdebd0; color: #784212; }
+  .badge-red    { background: #fadbd8; color: #78281f; }
+  .badge-purple { background: #e8daef; color: #4a235a; }
+
+  /* Steps / pipeline */
+  .pipeline { display: flex; align-items: flex-start; gap: 0; margin: 24px 0; overflow-x: auto; }
+  .step-box {
+    background: #fff; border-radius: 8px; padding: 16px 18px;
+    box-shadow: 0 1px 4px rgba(0,0,0,.08); flex: 1; min-width: 120px;
+  }
+  .step-box .step-num { font-size: 22px; font-weight: 700; color: #3498db; }
+  .step-box .step-title { font-weight: 600; font-size: 14px; margin: 4px 0 6px; }
+  .step-box .step-detail { font-size: 12px; color: #666; }
+  .arrow { font-size: 24px; color: #bdc3c7; padding: 24px 8px 0; align-self: flex-start; }
+
+  /* Callouts */
+  .callout {
+    border-left: 4px solid; padding: 12px 16px; border-radius: 0 6px 6px 0;
+    margin: 16px 0; font-size: 14px;
+  }
+  .callout-info { border-color: #3498db; background: #ebf5fb; }
+  .callout-warn { border-color: #f39c12; background: #fef9e7; }
+  .callout-tip  { border-color: #1abc9c; background: #e8f8f5; }
+  .callout-research { border-color: #9b59b6; background: #f5eef8; }
+
+  /* Section anchor helper */
+  .section-anchor { display: block; height: 0; visibility: hidden; }
+
+  /* Quick-nav boxes */
+  .quick-nav { display: flex; gap: 12px; flex-wrap: wrap; margin: 24px 0; }
+  .qn-card {
+    background: #fff; border-radius: 8px; padding: 14px 18px; flex: 1; min-width: 180px;
+    box-shadow: 0 1px 4px rgba(0,0,0,.08); border-left: 4px solid #3498db;
+    font-size: 13px; cursor: pointer;
+  }
+  .qn-card strong { display: block; margin-bottom: 4px; }
+
+  /* File tree */
+  .file-tree {
+    background: #1e1e2e; color: #cdd6f4; padding: 16px 20px; border-radius: 8px;
+    font-size: 13px; font-family: "SF Mono", "Fira Code", monospace;
+    line-height: 1.9; margin: 12px 0;
+    white-space: pre; overflow-x: auto;
+  }
+  .file-tree .dir  { color: #89b4fa; }
+  .file-tree .file { color: #a6e3a1; }
+  .file-tree .note { color: #6c7086; font-style: italic; }
+  .file-tree .new  { color: #f9e2af; }
+
+  /* Reliability meter */
+  .reliability-row { display: flex; align-items: center; gap: 12px; margin: 8px 0; }
+  .reliability-bar-bg { flex: 1; height: 10px; background: #e0e0e0; border-radius: 5px; overflow: hidden; }
+  .reliability-bar { height: 100%; border-radius: 5px; }
+  .rel-high   { background: #2ecc71; }
+  .rel-mod    { background: #f39c12; }
+  .rel-low    { background: #e74c3c; }
+
+  /* Log schema */
+  .log-line { background: #1e1e2e; color: #a6e3a1; padding: 8px 14px; border-radius: 6px;
+              font-size: 12px; font-family: "SF Mono", "Fira Code", monospace;
+              margin: 4px 0; }
+
+  /* Checklist */
+  .checklist { list-style: none; padding: 0; }
+  .checklist li { padding: 6px 0 6px 28px; position: relative; font-size: 14px; }
+  .checklist li::before {
+    content: "☐"; position: absolute; left: 0; color: #3498db; font-size: 16px;
+  }
+  .checklist li.done::before { content: "☑"; color: #2ecc71; }
+
+  /* Design proposal cards */
+  .design-card {
+    background: #fff; border-radius: 10px; box-shadow: 0 1px 6px rgba(0,0,0,.1);
+    margin: 24px 0; overflow: hidden;
+  }
+  .design-card-header {
+    display: flex; align-items: baseline; gap: 12px;
+    padding: 14px 20px; border-left: 6px solid;
+  }
+  .design-label {
+    font-size: 11px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 1px; opacity: .7; white-space: nowrap;
+  }
+  .design-name { font-size: 17px; font-weight: 700; flex: 1; }
+  .design-tag {
+    font-size: 11px; font-weight: 600; padding: 2px 8px;
+    border-radius: 10px; white-space: nowrap;
+    background: rgba(0,0,0,.07);
+  }
+  .da-header { border-color: #3498db; background: #ebf5fb; color: #1a5276; }
+  .db-header { border-color: #9b59b6; background: #f5eef8; color: #4a235a; }
+  .dc-header { border-color: #1abc9c; background: #e8f8f5; color: #0e6655; }
+  .dd-header { border-color: #e67e22; background: #fef5e7; color: #784212; }
+  .de-header { border-color: #e74c3c; background: #fdedec; color: #78281f; }
+  .df-header { border-color: #2ecc71; background: #e9f7ef; color: #1e8449; }
+  .design-body { padding: 0 0 4px; }
+  .design-body table { box-shadow: none; border-radius: 0; margin: 0; }
+  .design-body th { background: #f8f9fa; color: #34495e; font-size: 11px; }
+  .design-body td { font-size: 13px; }
+  .design-body td:first-child { font-weight: 600; color: #555; width: 120px; white-space: nowrap; }
+  .paper-ref { display: block; margin: 2px 0; font-size: 12px; }
+  .paper-ref cite { font-style: italic; color: #666; }
+
+  /* Comparison summary table */
+  .comparison-table th:first-child { width: 160px; }
+  .fit-badge {
+    display: inline-block; padding: 2px 7px; border-radius: 10px;
+    font-size: 11px; font-weight: 700;
+  }
+  .fit-core    { background: #d5f5e3; color: #1e8449; }
+  .fit-extend  { background: #d6eaf8; color: #1a5276; }
+  .fit-research{ background: #e8daef; color: #4a235a; }
+
+  /* Section divider */
+  .section-divider {
+    margin: 48px 0 32px; padding: 14px 20px; border-radius: 8px;
+    background: #34495e; color: #ecf0f1; font-size: 13px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 1.5px;
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+<!-- ── Sidebar nav ─────────────────────────────────────────────────────────── -->
+<nav>
+  <div class="logo">LT4CR<br>Explorer Guide</div>
+  <ul>
+    <li class="section">Start Here</li>
+    <li><a href="#overview">Overview</a></li>
+    <li><a href="#quick-start">Quick start</a></li>
+
+    <li class="section">Current Explorer</li>
+    <li><a href="#explorer-features">How it works</a></li>
+    <li><a href="#data-pipeline">Data pipeline</a></li>
+    <li><a href="#contrib-math">Contribution columns</a></li>
+
+    <li class="section">Planned: Streamlit App</li>
+    <li><a href="#stack">Tech stack</a></li>
+    <li><a href="#files">File layout</a></li>
+    <li><a href="#sidebar">Sidebar filters</a></li>
+    <li><a href="#tab-map">Tab 1 — Map</a></li>
+    <li><a href="#tab-rankings">Tab 2 — Rankings</a></li>
+    <li><a href="#tab-detail">Tab 3 — Language detail</a></li>
+    <li><a href="#tab-ask">Tab 4 — Ask the data</a></li>
+
+    <li class="section">LLM Features</li>
+    <li><a href="#llm-overview">Feature overview</a></li>
+    <li><a href="#llm-summary">1. Summary card</a></li>
+    <li><a href="#llm-query">2. NL query</a></li>
+    <li><a href="#llm-reliability">3. Reliability explainer</a></li>
+    <li><a href="#llm-counterfactual">4. Counterfactual</a></li>
+
+    <li class="section">Data &amp; Research</li>
+    <li><a href="#reliability">Reliability scoring</a></li>
+    <li><a href="#logging">Interaction logging</a></li>
+    <li><a href="#build-order">Build order</a></li>
+    <li><a href="#deployment">Deployment</a></li>
+    <li><a href="#verification">Verification</a></li>
+
+    <li class="section">Viz Research</li>
+    <li><a href="#viz-overview">Design proposals</a></li>
+    <li><a href="#viz-a">A. Stacked ranking</a></li>
+    <li><a href="#viz-b">B. Collapsible hierarchy</a></li>
+    <li><a href="#viz-c">C. Heatmap matrix</a></li>
+    <li><a href="#viz-d">D. Bipartite flow</a></li>
+    <li><a href="#viz-e">E. Regional equity</a></li>
+    <li><a href="#viz-f">F. Inferred weights</a></li>
+
+    <li class="section">Version History</li>
+    <li><a href="#version-v051">v0.5.1 — current</a></li>
+    <li><a href="#version-v05">v0.5 — UX polish</a></li>
+    <li><a href="#version-v03">v0.3 — precomputed data</a></li>
+    <li><a href="#version-v02">v0.2 — two-level</a></li>
+    <li><a href="#version-v0">v0 — static</a></li>
+    <li><a href="#version-legacy">Legacy pilot (archive)</a></li>
+  </ul>
+</nav>
+
+<!-- ── Main content ────────────────────────────────────────────────────────── -->
+<main>
+
+  <!-- ── Overview ─────────────────────────────────────────────────────────── -->
+  <span class="section-anchor" id="overview"></span>
+  <h1>LT4CR Explorer — Project Guide</h1>
+  <p class="subtitle">
+    Language &amp; Crisis Risk Index · 755 language–country pairs · 48 countries · 4 regions ·
+    Target users: NGO decision-makers, humanitarian funders, language policy stakeholders
+  </p>
+
+  <div class="callout callout-info">
+    <strong>Where things stand:</strong>
+    The <strong>LineUp.js explorer (v0.5.1)</strong> is deployed on GitHub Pages and is the current
+    working tool. A <strong>Streamlit + Claude API app</strong> with maps, LLM narrative, and
+    counterfactual analysis is planned next. This document covers both.
+  </div>
+
+  <div class="quick-nav">
+    <div class="qn-card" onclick="location.href='#quick-start'">
+      <strong>New here?</strong>
+      Quick start — open the tool and run it locally
+    </div>
+    <div class="qn-card" onclick="location.href='#explorer-features'">
+      <strong>Current explorer</strong>
+      Two-level LineUp.js table, weight sliders, side panel
+    </div>
+    <div class="qn-card" onclick="location.href='#llm-overview'">
+      <strong>Planned LLM features</strong>
+      4 Claude-powered features for the Streamlit app
+    </div>
+    <div class="qn-card" onclick="location.href='#viz-overview'">
+      <strong>Viz research</strong>
+      6 research-backed design proposals (A–F)
+    </div>
+  </div>
+
+  <div class="callout callout-info">
+    <strong>Data snapshot:</strong> 755 language–country pairs · 48 countries · 673 languages · 4 regions ·
+    All 5 normalized pillar columns are null-free · Notable nulls in raw data:
+    <span class="badge badge-orange">Active_Risks_Count 22.4%</span>
+    <span class="badge badge-orange">ICT_Development_Index 15.5%</span>
+    <span class="badge badge-orange">INFORM Severity ~11.5%</span>
+  </div>
+
+  <!-- ── Quick start ───────────────────────────────────────────────────────── -->
+  <span class="section-anchor" id="quick-start"></span>
+  <h2>Quick start</h2>
+
+  <h3>Access the deployed tool</h3>
+  <p>The v0.5.1 explorer is live on GitHub Pages. Open it in any modern browser:</p>
+  <div class="file-tree">https://beluticona.github.io/risk-index/v0.5.1/</div>
+
+  <h3>Run locally</h3>
+  <p>The explorer works without any build step — <code>serve.py</code> converts the Excel file to CSV on the fly:</p>
+  <div class="file-tree">cd /path/to/risk-index
+python serve.py           <span class="note"># starts local server at http://127.0.0.1:8010</span></div>
+
+  <p>Requirements: Python 3.x + <code>pip install pandas openpyxl</code>.</p>
+
+  <h3>Repos</h3>
+  <table>
+    <thead><tr><th>Repo</th><th>Purpose</th><th>Key files</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><code>beluticona/risk-index</code></td>
+        <td>Public explorer — deployed to GitHub Pages</td>
+        <td><code>index.html</code>, <code>build.py</code>, <code>serve.py</code>, <code>data/Final_Index.xlsx</code></td>
+      </tr>
+      <tr>
+        <td><code>CrisisVoices/index/</code></td>
+        <td>Private research repo — data pipeline, notebooks, docs</td>
+        <td><code>build_index.py</code>, <code>03-outputs/</code>, <code>UI_ROADMAP.html</code></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="callout callout-tip">
+    <strong>Deploying a new version:</strong> Push a <code>v*</code> tag to <code>risk-index</code> →
+    GitHub Actions runs <code>build.py</code> → deploys <code>dist/index.html</code> to
+    <code>gh-pages/{tag}/</code>. Old URLs stay live (<code>keep_files: true</code>).
+  </div>
+
+  <!-- ── Current Explorer ──────────────────────────────────────────────────── -->
+  <div class="section-divider">Current Explorer — v0.5.1 (shipped)</div>
+
+  <span class="section-anchor" id="explorer-features"></span>
+  <h2>How the explorer works</h2>
+
+  <p>
+    A self-contained, single-file HTML explorer built on <strong>LineUp.js v4.16.0</strong>.
+    No server, no framework, no API keys. All 755 rows from <code>Final_Index.xlsx</code>
+    are baked into the HTML at build time. Two interaction modes give users both an overview
+    and a deep-dive into any pillar.
+  </p>
+
+  <h3>Column modes</h3>
+  <table>
+    <thead><tr><th>Type</th><th>Columns</th><th>When visible</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><span class="badge badge-blue">Context</span></td>
+        <td><code>language_name</code>, <code>location_name</code>, <code>Region</code>, <code>status</code></td>
+        <td>Always — pinned left in all modes</td>
+      </tr>
+      <tr>
+        <td><span class="badge badge-green">Overview scores</span></td>
+        <td><code>weighted_index</code> + 5 pillar columns (<code>*_Indicators_norm</code>)</td>
+        <td>Overview mode (default)</td>
+      </tr>
+      <tr>
+        <td><span class="badge badge-orange">Sub-indicator scores</span></td>
+        <td>Pillar-specific <code>_contrib</code> columns (one per sub-indicator)</td>
+        <td>Pillar drill-down mode (click any pillar header)</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h3>Overview ↔ Pillar drill-down</h3>
+  <p>
+    Clicking any pillar column header (e.g. "Language Tech") swaps the 5 pillar columns
+    for that pillar's sub-indicator contribution columns. Context columns and
+    <code>weighted_index</code> stay. The <strong>"Overview mode"</strong> button in the
+    header always returns to the full pillar view.
+  </p>
+
+  <h3>Row side panel</h3>
+  <p>Clicking any row opens a side panel showing:</p>
+  <table>
+    <thead><tr><th>Section</th><th>Content</th></tr></thead>
+    <tbody>
+      <tr><td>Header</td><td>Language name, country, composite score, language status</td></tr>
+      <tr><td>Per pillar (×5)</td><td>Pillar score · each sub-indicator as raw → norm → contrib · source name + link + year</td></tr>
+      <tr><td>Data level badge</td><td><span class="badge badge-blue">country-level</span> or <span class="badge badge-green">language-level</span></td></tr>
+      <tr><td>Missing data flag</td><td>If any sub-indicator was null → filled as 0 with a directional bias note</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Live weight adjustment</h3>
+  <p>
+    A compact weight bar in the header contains one range slider per pillar.
+    Dragging any slider <strong>proportionally rebalances the others</strong> so the total
+    stays at 100%. The <code>weighted_index</code> column recomputes in-browser using:
+  </p>
+  <pre style="background:#f6f8fa;border:1px solid #e8e8e8;border-radius:4px;padding:8px 12px;font-size:12px;overflow-x:auto;margin:8px 0">weighted_index = Σ (Pillar_Indicators_norm × weight_i / Σ weight_j)</pre>
+  <p>No server round-trip — 755 rows recalculate instantly. A <strong>Reset</strong> button restores
+  published default weights. The side panel score line always shows the current weight split.</p>
+
+  <table>
+    <thead><tr><th>Pillar</th><th>Default weight</th></tr></thead>
+    <tbody>
+      <tr><td>Linguistic</td><td>20%</td></tr>
+      <tr><td>Crisis Risk</td><td>25%</td></tr>
+      <tr><td>Comms &amp; Tech</td><td>15%</td></tr>
+      <tr><td>Language Tech</td><td>25%</td></tr>
+      <tr><td>Social &amp; Econ</td><td>15%</td></tr>
+    </tbody>
+  </table>
+
+  <!-- ── Data pipeline ─────────────────────────────────────────────────────── -->
+  <span class="section-anchor" id="data-pipeline"></span>
+  <h2>Data pipeline — <code>build_index.py</code></h2>
+
+  <p>
+    A standalone, fully reproducible Python script at <code>index/build_index.py</code>.
+    Running it from <code>CrisisVoices/index/</code> reads
+    <code>03-outputs/Final_Match_Countries_Languages.xlsx</code> and writes
+    <code>03-outputs/Final_Index_v2.xlsx</code> (100 columns, up from 77 in v1).
+  </p>
+
+  <div class="file-tree" style="margin:12px 0">python build_index.py
+<span class="note">  # or with custom paths:
+  python build_index.py \
+      --input  03-outputs/Final_Match_Countries_Languages.xlsx \
+      --output 03-outputs/Final_Index_v2.xlsx</span></div>
+
+  <p>The script runs these steps in order:</p>
+  <ol>
+    <li>Derive <code>drivers_count</code> from the ACAPS string-list field.</li>
+    <li>Apply per-column normalisation (direct min-max, inverted min-max, divide-by-100, direct inversion).</li>
+    <li>Sum normalised sub-indicators → <code>Pillar_Indicators</code>; min-max → <code>Pillar_Indicators_norm</code>.</li>
+    <li>Compute 20 <code>*_contrib</code> columns and verify the invariant before writing.</li>
+    <li>Compute <code>simple_index</code> (equal-weight average) and <code>weighted_index</code> (default weights).</li>
+    <li>Write 9-sheet Excel workbook + CSV.</li>
+  </ol>
+
+  <div class="callout callout-tip">
+    <strong>Reproducibility guarantee:</strong> running <code>build_index.py</code> on an unchanged
+    <code>Final_Match_Countries_Languages.xlsx</code> produces bit-identical output to <code>Final_Index_v2.xlsx</code>.
+    All methodology decisions are encoded in the script, making future updates — new data vintages,
+    added sub-indicators, revised weights — a single-file change.
+  </div>
+
+  <h3>Sub-indicator columns by pillar</h3>
+  <p>These replace the 5 overview pillar columns when the user drills into a specific pillar.
+  The table shows <strong>contribution columns</strong> (<code>_contrib</code> suffix) — precomputed
+  by <code>build_index.py</code>, stored in <code>Final_Index_v2.xlsx</code>, read directly from the CSV.
+  See <a href="PROCEDURE.html#indicator-detail">PROCEDURE.html → Indicator calculations</a> for
+  normalization formulas and source details.</p>
+  <table>
+    <thead><tr><th>Pillar</th><th>Sub-indicator columns (source names)</th></tr></thead>
+    <tbody>
+      <tr><td>Linguistic</td><td><code>total_speakers_norm</code>, <code>Linguistic_Diversity_Index_2017_norm</code></td></tr>
+      <tr><td>Crisis Risk</td><td><code>INFORM Severity Index_norm</code>, <code>Active_Risks_Count_norm</code>, <code>drivers_count_norm</code></td></tr>
+      <tr><td>Comms &amp; Tech</td><td><code>MCI_Index_inv_norm</code>, <code>Digital_Language_Support_inv_norm</code>, <code>Language_accessibility_of_top_ranked_apps_inv_norm</code>, <code>ICT_Development_Index_inv_norm</code></td></tr>
+      <tr><td>Language Tech</td><td><code>Recorded Hours_inv_norm</code>, <code>Validated Hours_inv_norm</code>, <code>Articles_inv_norm</code>, <code>active_users_inv_norm</code>, <code>Datasets_inv_norm</code>, <code>Models_inv_norm</code>, <code>appear_google_inv_norm</code></td></tr>
+      <tr><td>Social &amp; Econ</td><td><code>GDP_2015_inv_norm</code>, <code>IHDI_inv_norm</code>, <code>Education_Index_Value_inv_norm</code>, <code>Literacy_Rate_inv_norm</code></td></tr>
+    </tbody>
+  </table>
+
+  <!-- ── Contrib math ──────────────────────────────────────────────────────── -->
+  <span class="section-anchor" id="contrib-math"></span>
+  <h2>Why contribution columns? The two-step normalisation</h2>
+
+  <div class="callout callout-warn">
+    <strong>Why sub-indicator bars don't directly sum to the pillar score (and what we do about it)</strong>
+
+    <p>A natural expectation is: <em>if you add up the sub-indicator values in the drill-down, they should equal
+    the pillar score shown in the overview.</em>  This is not possible with the raw normalised sub-indicator
+    columns (<code>*_inv_norm</code>) because of the <strong>two-step normalisation</strong> used in the index pipeline:</p>
+
+    <ol>
+      <li>Each sub-indicator is individually min-max normalised to <code>[0, 1]</code>.</li>
+      <li>The normalised values are <strong>summed</strong> into an intermediate column
+          <code>Pillar_Indicators</code> (range <code>[0, N]</code> where N = number of sub-indicators).</li>
+      <li>That sum is <strong>min-maxed again</strong> across all 755 rows to produce
+          <code>Pillar_Indicators_norm</code> (the pillar score in the overview, range <code>[0, 1]</code>).</li>
+    </ol>
+
+    <p>Step 3 changes the scale, so the individual sub-indicator norms cannot directly sum to the pillar norm:
+    <code>Σ sub_inv_norm_i = Pillar_Indicators ≠ Pillar_Indicators_norm</code>.</p>
+
+    <p><strong>Solution — contribution columns (<code>_contrib</code>):</strong>
+    For each sub-indicator and each row, a proportional contribution weight is computed:</p>
+
+    <pre style="background:#f6f8fa;border:1px solid #e8e8e8;border-radius:4px;padding:8px 12px;font-size:12px;overflow-x:auto;margin:8px 0">contrib_i = (sub_inv_norm_i / Pillar_Indicators) × Pillar_Indicators_norm
+
+Σ contrib_i = Pillar_Indicators_norm  ✓</pre>
+
+    <p>As of <strong>v0.3</strong>, these columns (suffix <code>_contrib</code>, one per sub-indicator, 20 total) are
+    <strong>precomputed by <code>build_index.py</code></strong> and stored directly in <code>Final_Index_v2.xlsx</code>.
+    The browser reads them from the CSV — no in-browser recomputation required.
+    The side panel shows all three values per sub-indicator: <strong>raw → norm → contrib</strong>.</p>
+
+    <p><em>Limitation:</em> The contribution values scale with the pillar score.  A sub-indicator with
+    <code>sub_inv_norm = 0.9</code> that belongs to a low-scoring language (pillar = 0.3) will show a
+    smaller bar than the same sub-indicator for a high-scoring language (pillar = 0.9).  This is intentional —
+    the column shows <em>how much this sub-indicator contributes to the row's pillar score</em>, not its
+    absolute normalised value.</p>
+  </div>
+
+  <div class="callout callout-info">
+    <strong>Design principle:</strong> At any point where a user is looking at a score — whether in the
+    table or in the side panel — the formula used to produce it and the source of the underlying data
+    should be one click or one scroll away. The side panel is the primary vehicle for this; the
+    PROCEDURE.html document is the reference for analysts who want the full methodology.
+  </div>
+
+  <!-- ── PLANNED SECTION ───────────────────────────────────────────────────── -->
+  <div class="section-divider">Planned: Streamlit + LLM App (not yet built)</div>
+
+  <p style="color:#666;font-size:14px;margin-bottom:24px">
+    Everything below describes the next major version of the tool — a Streamlit + Claude API app
+    with interactive maps, LLM narrative, and counterfactual analysis. The LineUp.js explorer
+    (above) will remain live while this is built.
+  </p>
+
+  <!-- ── Stack ──────────────────────────────────────────────────────────────── -->
+  <span class="section-anchor" id="stack"></span>
+  <h2>Tech stack</h2>
+
+  <table>
+    <thead><tr><th>Layer</th><th>Choice</th><th>Reason</th></tr></thead>
+    <tbody>
+      <tr><td>UI framework</td><td><code>streamlit</code></td><td>Python-native, minimal boilerplate, free cloud hosting</td></tr>
+      <tr><td>Charts</td><td><code>plotly</code></td><td>Interactive scatter_geo map, radar chart, mini-bars in one library</td></tr>
+      <tr><td>LLM</td><td><code>anthropic</code> — <code>claude-haiku-4-5-20251001</code></td><td>Fastest model for interactive latency; all 4 features grounded with actual data</td></tr>
+      <tr><td>Data</td><td><code>pandas</code> + <code>openpyxl</code></td><td>Read <code>Final_Index.xlsx</code>; parse crisis drivers via <code>ast.literal_eval()</code></td></tr>
+      <tr><td>Secrets</td><td><code>python-dotenv</code> locally · Streamlit Secrets in cloud</td><td>Keep API key out of code and out of git</td></tr>
+      <tr><td>Environment</td><td><code>pipenv</code></td><td>Consistent with existing project environment management</td></tr>
+    </tbody>
+  </table>
+
+  <!-- ── File layout ────────────────────────────────────────────────────────── -->
+  <span class="section-anchor" id="files"></span>
+  <h2>File layout (planned Streamlit app)</h2>
+
+  <div class="file-tree">
+<span class="dir">index/</span>
+├── <span class="new">pilots/</span>                            <span class="note">← one sub-folder per design pilot</span>
+│   ├── <span class="new">shared/</span>                        <span class="note">← code shared by all pilots</span>
+│   │   ├── <span class="new">config.py</span>              <span class="note">← pillar defs, weights, prompt templates, DATA_PATH</span>
+│   │   ├── <span class="new">data_loader.py</span>         <span class="note">← load original_index sheet, parse drivers, reliability</span>
+│   │   ├── <span class="new">reliability.py</span>         <span class="note">← per-row completeness score (0–100%)</span>
+│   │   └── <span class="new">llm_client.py</span>          <span class="note">← Features 1 (summary) + 3 (reliability explainer)</span>
+│   ├── <span class="new">pilot_a/</span>                       <span class="note">← ✅ Design A: Stacked ranking (LineUp-style)</span>
+│   │   ├── <span class="new">app.py</span>                 <span class="note">← streamlit entry point</span>
+│   │   ├── <span class="new">charts.py</span>              <span class="note">← stacked_bar_chart, radar_chart, pillar_bar</span>
+│   │   └── <span class="new">logs/</span>                  <span class="note">← session_{ts}.jsonl interaction logs</span>
+│   ├── <span class="new">pilot_b/</span>                       <span class="note">← Design B: Collapsible hierarchy (Taggle-style)</span>
+│   ├── <span class="new">pilot_c/</span>                       <span class="note">← Design C: Heatmap matrix</span>
+│   ├── <span class="new">pilot_d/</span>                       <span class="note">← Design D: Bipartite Sankey flow</span>
+│   ├── <span class="new">pilot_e/</span>                       <span class="note">← Design E: Regional equity (FairSight-style)</span>
+│   └── <span class="new">pilot_f/</span>                       <span class="note">← Design F: Inferred weights (Podium-style)</span>
+├── <span class="new">.env</span>                               <span class="note">← ANTHROPIC_API_KEY (NOT committed)</span>
+├── <span class="new">requirements.txt</span>                   <span class="note">← streamlit, plotly, anthropic, pandas, openpyxl, python-dotenv</span>
+├── 03-outputs/
+│   └── <span class="file">Final_Index_v2.xlsx</span>        <span class="note">← output of build_index.py (100 cols, 755 rows)</span>
+└── <span class="note">... (existing pipeline files unchanged)</span>
+  </div>
+
+  <div class="callout callout-tip">
+    <strong>Run Pilot A:</strong>
+    <code>cd index &amp;&amp; PIPENV_IGNORE_VIRTUALENVS=1 pipenv run streamlit run pilots/pilot_a/app.py</code>
+    &nbsp; Each pilot runs the same way — just swap <code>pilot_a</code> for <code>pilot_b</code>, etc.
+    Shared code in <code>pilots/shared/</code> is imported by all pilots; no duplication.
+  </div>
+
+  <div class="callout callout-warn">
+    <strong>Security:</strong> Never commit <code>.env</code> or <code>app/logs/</code> to git.
+    Add both to <code>.gitignore</code>. For Streamlit Cloud, set <code>ANTHROPIC_API_KEY</code>
+    in the Secrets panel only. Set <code>DISABLE_LOGGING=1</code> env var to suppress log writes
+    when running in hosted/public mode.
+  </div>
+
+  <!-- ── Sidebar ────────────────────────────────────────────────────────────── -->
+  <span class="section-anchor" id="sidebar"></span>
+  <h2>Sidebar — filters &amp; weight controls</h2>
+
+  <table>
+    <thead><tr><th>Control</th><th>Widget</th><th>Behavior</th></tr></thead>
+    <tbody>
+      <tr>
+        <td>Region</td>
+        <td><code>st.multiselect</code></td>
+        <td>Africa / Asia / North America / South America. Cascades into Country filter.</td>
+      </tr>
+      <tr>
+        <td>Country</td>
+        <td><code>st.multiselect</code></td>
+        <td>Populated from selected regions. Empty = all countries.</td>
+      </tr>
+      <tr>
+        <td>Language status</td>
+        <td><code>st.multiselect</code></td>
+        <td>not endangered / threatened / shifting / nearly extinct / moribund</td>
+      </tr>
+      <tr>
+        <td>Crisis drivers</td>
+        <td><code>st.multiselect</code></td>
+        <td>Parsed from <code>drivers</code> column via <code>ast.literal_eval()</code>. Any-match filter.</td>
+      </tr>
+      <tr>
+        <td>Risk score range</td>
+        <td><code>st.slider</code> (0.0 – 1.0)</td>
+        <td>Filters rows to the selected band.</td>
+      </tr>
+      <tr>
+        <td>Pillar weights</td>
+        <td>5× <code>st.slider</code></td>
+        <td>Sum must equal 1.0. Recalculates <code>weighted_index</code> live from normalized pillar scores. Reset button restores defaults.</td>
+      </tr>
+      <tr>
+        <td>Score display</td>
+        <td><code>st.radio</code></td>
+        <td>Weighted index (default) or simple average index.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="callout callout-tip">
+    <strong>Live weight recalculation:</strong> The 5 pillar normalized columns
+    (<code>Linguistic_Indicators_norm</code>, etc.) are always null-free, so
+    <code>weighted_index = Σ(pillar_norm × weight)</code> can be recomputed instantly in-memory
+    for all 755 rows with no I/O. This also feeds the counterfactual feature (Tab 3).
+  </div>
+
+  <!-- ── Tab 1 Map ──────────────────────────────────────────────────────────── -->
+  <span class="section-anchor" id="tab-map"></span>
+  <h2>Tab 1 — Map</h2>
+
+  <p>Plotly <code>scatter_geo</code> with one bubble per language–country pair.</p>
+
+  <table>
+    <thead><tr><th>Visual channel</th><th>Data column</th><th>Notes</th></tr></thead>
+    <tbody>
+      <tr><td>Bubble position</td><td><code>Lat</code> / <code>Lon</code></td><td>Country centroid coordinates</td></tr>
+      <tr><td>Bubble color</td><td><code>weighted_index</code></td><td>Green → red colorscale (0 = safe, 1 = high risk)</td></tr>
+      <tr><td>Bubble size</td><td><code>total_speakers</code></td><td>Log scale; min size clipped so small populations are still visible</td></tr>
+      <tr><td>Hover tooltip</td><td>—</td><td>Language name, country, score (2 dp), reliability badge</td></tr>
+      <tr><td>Click action</td><td>—</td><td>Sets <code>st.session_state["selected"]</code> → switches to Tab 3 (detail panel)</td></tr>
+    </tbody>
+  </table>
+
+  <!-- ── Tab 2 Rankings ─────────────────────────────────────────────────────── -->
+  <span class="section-anchor" id="tab-rankings"></span>
+  <h2>Tab 2 — Rankings table</h2>
+
+  <p>Sortable <code>st.dataframe</code> of all filtered rows.</p>
+
+  <table>
+    <thead><tr><th>Column</th><th>Source</th><th>Display</th></tr></thead>
+    <tbody>
+      <tr><td>Language</td><td><code>Language_Name</code></td><td>Plain text</td></tr>
+      <tr><td>Country</td><td><code>country_name</code></td><td>Plain text</td></tr>
+      <tr><td>Region</td><td><code>region</code></td><td>Plain text</td></tr>
+      <tr><td>Score</td><td><code>weighted_index</code></td><td>Float (2 dp), sorted descending by default</td></tr>
+      <tr><td>Reliability</td><td>computed</td><td>Colored badge: <span class="badge badge-green">High</span> <span class="badge badge-orange">Moderate</span> <span class="badge badge-red">Low</span></td></tr>
+      <tr><td>Pillar bars</td><td>5 norm columns</td><td>Mini horizontal bars per pillar, rendered as Plotly sparklines</td></tr>
+      <tr><td>Drivers</td><td><code>drivers</code></td><td>Small tag chips (e.g. Conflict, Floods)</td></tr>
+    </tbody>
+  </table>
+
+  <p>Clicking a row sets <code>st.session_state["selected"]</code> and navigates to Tab 3.</p>
+
+  <!-- ── Tab 3 Detail ───────────────────────────────────────────────────────── -->
+  <span class="section-anchor" id="tab-detail"></span>
+  <h2>Tab 3 — Language detail panel</h2>
+
+  <p>Shown when a language–country pair is selected from the map or table.</p>
+
+  <table>
+    <thead><tr><th>Section</th><th>Content</th><th>LLM?</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><strong>Header</strong></td>
+        <td>Language name, country, score, reliability badge, language status</td>
+        <td>—</td>
+      </tr>
+      <tr>
+        <td><strong>Summary card</strong></td>
+        <td>3–4 plain-language sentences about risk profile, citing actual numbers</td>
+        <td><span class="badge badge-blue">Feature 1</span></td>
+      </tr>
+      <tr>
+        <td><strong>Radar chart</strong></td>
+        <td>Spider chart of 5 pillar scores (Plotly polar chart)</td>
+        <td>—</td>
+      </tr>
+      <tr>
+        <td><strong>Reliability explainer</strong></td>
+        <td>Expandable section: which fields are null, which pillars affected, directional implication</td>
+        <td><span class="badge badge-purple">Feature 3</span></td>
+      </tr>
+      <tr>
+        <td><strong>Counterfactual sliders</strong></td>
+        <td>Sliders for CV hours, HF datasets, INFORM Severity, GDP · live score recalculation · LLM narrative on change</td>
+        <td><span class="badge badge-green">Feature 4</span></td>
+      </tr>
+      <tr>
+        <td><strong>Raw data</strong></td>
+        <td>Collapsible table of all 42+ columns for this row</td>
+        <td>—</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- ── Tab 4 Ask ──────────────────────────────────────────────────────────── -->
+  <span class="section-anchor" id="tab-ask"></span>
+  <h2>Tab 4 — Ask the data</h2>
+
+  <p>Natural language interface to the full dataset.</p>
+
+  <div class="pipeline">
+    <div class="step-box">
+      <div class="step-num">1</div>
+      <div class="step-title">User types query</div>
+      <div class="step-detail">"Find languages in conflict zones with no Common Voice data"</div>
+    </div>
+    <div class="arrow">→</div>
+    <div class="step-box">
+      <div class="step-num">2</div>
+      <div class="step-title">Claude generates filter</div>
+      <div class="step-detail">Returns a <code>df.query()</code> string — no arbitrary code exec</div>
+    </div>
+    <div class="arrow">→</div>
+    <div class="step-box">
+      <div class="step-num">3</div>
+      <div class="step-title">App applies filter</div>
+      <div class="step-detail">Runs in try/except; shows friendly error if Claude's filter fails to parse</div>
+    </div>
+    <div class="arrow">→</div>
+    <div class="step-box">
+      <div class="step-num">4</div>
+      <div class="step-title">Results + explanation</div>
+      <div class="step-detail">Filtered table + one-sentence explanation of what the filter found</div>
+    </div>
+  </div>
+
+  <div class="callout callout-warn">
+    <strong>Safety:</strong> Claude returns a <code>pandas.DataFrame.query()</code> string only — not arbitrary Python.
+    The app wraps execution in <code>try/except</code> and validates the result is a DataFrame before displaying it.
+    If the query fails, show the raw Claude response so the user can manually inspect.
+  </div>
+
+  <!-- ── LLM overview ───────────────────────────────────────────────────────── -->
+  <span class="section-anchor" id="llm-overview"></span>
+  <h2>LLM features — overview</h2>
+
+  <div class="callout callout-info">
+    All 4 features use <strong><code>claude-haiku-4-5-20251001</code></strong> (fastest model, sub-second
+    latency for interactive use). All prompts are <strong>grounded</strong> — actual numeric values
+    from the row are injected so the model cannot hallucinate metrics. Summary cards are cached
+    with <code>@st.cache_data</code> keyed on language_code + location_code.
+  </div>
+
+  <div class="features">
+    <div class="feature-card f1">
+      <div class="num">①</div>
+      <div class="name">Language summary card</div>
+    </div>
+    <div class="feature-card f2">
+      <div class="num">②</div>
+      <div class="name">Natural language query</div>
+    </div>
+    <div class="feature-card f3">
+      <div class="num">③</div>
+      <div class="name">Reliability explainer</div>
+    </div>
+    <div class="feature-card f4">
+      <div class="num">④</div>
+      <div class="name">Counterfactual Q&amp;A</div>
+    </div>
+  </div>
+
+  <!-- ── LLM Feature 1 ──────────────────────────────────────────────────────── -->
+  <span class="section-anchor" id="llm-summary"></span>
+  <h3>Feature 1 — Language summary card</h3>
+
+  <p>Triggered when the user opens a language detail panel (Tab 3). Cached so repeated opens don't re-call the API.</p>
+
+  <table>
+    <thead><tr><th>Attribute</th><th>Value</th></tr></thead>
+    <tbody>
+      <tr><td>Trigger</td><td>Language selected from map or table</td></tr>
+      <tr><td>Input to prompt</td><td>language name, country, weighted_index, all 5 pillar scores, key raw values, reliability label, missing fields list</td></tr>
+      <tr><td>Output</td><td>3–4 sentences: what drives the risk, what data gaps mean, one actionable implication</td></tr>
+      <tr><td>Cache</td><td><code>@st.cache_data</code> keyed on <code>language_code + location_code</code></td></tr>
+      <tr><td>UX</td><td><code>st.spinner("Generating summary...")</code> while loading</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Prompt template</h3>
+<pre>SUMMARY_PROMPT = """
+You are a humanitarian data analyst writing a brief for NGO decision-makers.
+Based on the following data for {language} in {country}, write 3-4 plain-language
+sentences summarizing the language community's crisis risk profile.
+Be specific — cite actual numbers. If data is missing, say so and explain the implication.
+
+Weighted risk index: {weighted_index:.2f} (scale 0–1, higher = more vulnerable)
+Pillar scores (0–1):
+  Linguistic         = {ling:.2f}
+  Crisis Risk        = {crisis:.2f}
+  Comms &amp; Tech      = {comms:.2f}
+  Language Tech      = {langtech:.2f}
+  Social &amp; Econ     = {soc:.2f}
+Key raw values:
+  INFORM Severity              = {inform}
+  Conflict drivers             = {drivers}
+  Common Voice validated hrs   = {cv_hrs}
+  HuggingFace datasets         = {hf_datasets}
+  GDP per capita (2015 USD)    = {gdp}
+  Literacy rate                = {literacy}%
+Data reliability: {reliability_label} ({reliability_pct:.0%} of key fields present)
+Missing fields: {missing_fields}
+"""</pre>
+
+  <!-- ── LLM Feature 2 ──────────────────────────────────────────────────────── -->
+  <span class="section-anchor" id="llm-query"></span>
+  <h3>Feature 2 — Natural language query</h3>
+
+  <p>Used in Tab 4. Claude translates a freetext question into a safe <code>df.query()</code> filter string.</p>
+
+  <table>
+    <thead><tr><th>Attribute</th><th>Value</th></tr></thead>
+    <tbody>
+      <tr><td>Trigger</td><td>User submits text in Tab 4 input box</td></tr>
+      <tr><td>Step 1 input</td><td>User query + full column schema (names, dtypes, sample values)</td></tr>
+      <tr><td>Step 1 output</td><td>A <code>pandas.DataFrame.query()</code> string — nothing else</td></tr>
+      <tr><td>Step 2</td><td>App runs <code>df.query(filter_str)</code> in try/except</td></tr>
+      <tr><td>Step 3 output</td><td>One sentence explaining what the filter found, how many rows matched</td></tr>
+      <tr><td>Fallback</td><td>If parse fails: show friendly error + raw Claude response for manual inspection</td></tr>
+    </tbody>
+  </table>
+
+<pre>QUERY_SYSTEM_PROMPT = """
+You translate natural language questions into pandas DataFrame query strings.
+The DataFrame has these columns (with example values):
+  Language_Name (str): "Dari", "Amharic"
+  country_name (str): "Afghanistan", "Ethiopia"
+  region (str): "Asia", "Africa", "North America", "South America"
+  weighted_index (float 0–1): 0.72
+  Linguistic_Indicators_norm (float 0–1): 0.65
+  CrisisRisk_Indicators_norm (float 0–1): 0.88
+  CommsTech_Indicators_norm (float 0–1): 0.54
+  LangTech_Indicators_norm (float 0–1): 0.91
+  SocialEcon_Indicators_norm (float 0–1): 0.70
+  Validated_Hours (float): 0.0, 45.2
+  Active_Risks_Count (float, nullable): 0.0, 3.0, NaN
+  reliability_pct (float 0–1): 0.84
+  reliability_label (str): "High", "Moderate", "Low"
+
+Return ONLY the query string suitable for df.query(). No explanation, no code blocks.
+If the question cannot be expressed as a query, return: CANNOT_FILTER
+"""</pre>
+
+  <!-- ── LLM Feature 3 ──────────────────────────────────────────────────────── -->
+  <span class="section-anchor" id="llm-reliability"></span>
+  <h3>Feature 3 — Data reliability explainer</h3>
+
+  <p>Shown inline in Tab 3, inside an expandable <code>st.expander("How reliable is this score?")</code>.
+     Unlike the summary card, this is specifically grounded in <em>which</em> fields are null for this row.</p>
+
+  <table>
+    <thead><tr><th>Attribute</th><th>Value</th></tr></thead>
+    <tbody>
+      <tr><td>Trigger</td><td>Expandable section open in Tab 3</td></tr>
+      <tr><td>Input to prompt</td><td>Missing fields, affected pillars, fill value used (0), directional bias</td></tr>
+      <tr><td>Output</td><td>2–3 sentences: specific to this row's gaps, not a generic disclaimer</td></tr>
+      <tr><td>Grounding</td><td>Prompt includes the directional implication, e.g. "treating missing INFORM Severity as 0 underestimates crisis risk"</td></tr>
+    </tbody>
+  </table>
+
+<pre>RELIABILITY_PROMPT = """
+You are explaining a data quality concern to a non-technical NGO analyst.
+For {language} in {country} (weighted index: {weighted_index:.2f}):
+
+Missing data fields: {missing_fields}
+Affected pillars:    {affected_pillars}
+Fill value used:     0 (zero-fill before aggregation)
+Directional bias:    {bias_description}
+
+Write 2–3 sentences explaining what the missing data means for the reliability
+of this score. Be specific — name the missing fields. Do not write a generic
+data quality disclaimer.
+"""</pre>
+
+  <!-- ── LLM Feature 4 ──────────────────────────────────────────────────────── -->
+  <span class="section-anchor" id="llm-counterfactual"></span>
+  <h3>Feature 4 — Counterfactual Q&amp;A</h3>
+
+  <p>Sliders in Tab 3 let users simulate "what if" scenarios. The score updates live; Claude narrates
+     the practical meaning of the change.</p>
+
+  <table>
+    <thead><tr><th>Slider</th><th>Column modified</th><th>Range</th></tr></thead>
+    <tbody>
+      <tr><td>Common Voice validated hours</td><td><code>Validated_Hours</code></td><td>0 – 1000 hrs</td></tr>
+      <tr><td>HuggingFace datasets</td><td><code>Datasets</code></td><td>0 – 50</td></tr>
+      <tr><td>INFORM Severity</td><td><code>INFORM Severity Index</code></td><td>0.0 – 10.0</td></tr>
+      <tr><td>GDP per capita</td><td><code>GDP_2015</code></td><td>$500 – $50,000</td></tr>
+    </tbody>
+  </table>
+
+  <div class="pipeline">
+    <div class="step-box">
+      <div class="step-num">1</div>
+      <div class="step-title">Slider changes</div>
+      <div class="step-detail">Modified value captured in <code>st.session_state</code></div>
+    </div>
+    <div class="arrow">→</div>
+    <div class="step-box">
+      <div class="step-num">2</div>
+      <div class="step-title">Re-normalize</div>
+      <div class="step-detail">Run normalization on all 755 rows with modified value; recompute weighted_index for this row</div>
+    </div>
+    <div class="arrow">→</div>
+    <div class="step-box">
+      <div class="step-num">3</div>
+      <div class="step-title">Score delta</div>
+      <div class="step-detail">Display new score vs original; compute rank change across all rows</div>
+    </div>
+    <div class="arrow">→</div>
+    <div class="step-box">
+      <div class="step-num">4</div>
+      <div class="step-title">LLM narrative</div>
+      <div class="step-detail">1–2 sentences: practical meaning of the change, which pillar moved</div>
+    </div>
+  </div>
+
+<pre>COUNTERFACTUAL_PROMPT = """
+A humanitarian analyst has changed one input value for {language} in {country}.
+
+Original score: {original_score:.3f} (rank {original_rank} of {total_rows})
+New score:      {new_score:.3f}      (rank {new_rank} of {total_rows})
+Changed field:  {field_name}
+  Before: {old_value}
+  After:  {new_value}
+Pillar most affected: {affected_pillar} ({pillar_before:.2f} → {pillar_after:.2f})
+
+Write 1–2 sentences explaining the practical meaning of this change for
+humanitarian planning. Cite the specific score and rank change.
+"""</pre>
+
+  <!-- ── Reliability scoring ────────────────────────────────────────────────── -->
+  <span class="section-anchor" id="reliability"></span>
+  <h2>Reliability scoring (<code>reliability.py</code>)</h2>
+
+  <p>Each language–country row receives a <strong>reliability score</strong> (0–100%) computed as the
+     weighted fraction of key raw input columns that are non-null. Weights follow pillar importance in the index.</p>
+
+  <table>
+    <thead><tr><th>Pillar (weight)</th><th>Key raw columns checked</th></tr></thead>
+    <tbody>
+      <tr><td>Crisis Risk <strong>(25%)</strong></td><td><code>INFORM Severity Index</code>, <code>Active_Risks_Count</code>, <code>drivers</code></td></tr>
+      <tr><td>Language Tech <strong>(25%)</strong></td><td><code>Recorded Hours</code>, <code>Validated Hours</code>, <code>Articles</code>, <code>Datasets</code>, <code>Models</code></td></tr>
+      <tr><td>Linguistic <strong>(20%)</strong></td><td><code>total_speakers</code>, <code>Linguistic_Diversity_Index_2017</code></td></tr>
+      <tr><td>Comms &amp; Tech <strong>(15%)</strong></td><td><code>MCI_Index</code>, <code>ICT_Development_Index</code>, <code>Digital_Language_Support</code></td></tr>
+      <tr><td>Social &amp; Econ <strong>(15%)</strong></td><td><code>GDP_2015</code>, <code>Literacy_Rate</code>, <code>IHDI</code></td></tr>
+    </tbody>
+  </table>
+
+  <h3>Formula</h3>
+<pre>def compute_reliability(row):
+    pillar_scores = {}
+    for pillar_name, (cols, weight) in PILLAR_COLUMNS.items():
+        present = sum(1 for c in cols if pd.notna(row.get(c)))
+        pillar_scores[pillar_name] = (present / len(cols)) * weight
+
+    reliability_pct = sum(pillar_scores.values())  # weighted 0–1
+
+    label = (
+        "High"     if reliability_pct >= 0.90 else
+        "Moderate" if reliability_pct >= 0.70 else
+        "Low"
+    )
+    missing = [c for _, (cols, _) in PILLAR_COLUMNS.items()
+               for c in cols if pd.isna(row.get(c))]
+
+    return {
+        "reliability_pct":   reliability_pct,
+        "reliability_label": label,
+        "missing_fields":    missing,
+        "affected_pillars":  [p for p, s in pillar_scores.items() if s &lt; PILLAR_COLUMNS[p][1]]
+    }</pre>
+
+  <h3>Reliability labels</h3>
+  <div class="reliability-row">
+    <span class="badge badge-green">High</span>
+    <div class="reliability-bar-bg"><div class="reliability-bar rel-high" style="width:90%"></div></div>
+    <span style="font-size:13px; color:#555">≥ 90% of weighted key fields present</span>
+  </div>
+  <div class="reliability-row">
+    <span class="badge badge-orange">Moderate</span>
+    <div class="reliability-bar-bg"><div class="reliability-bar rel-mod" style="width:79%"></div></div>
+    <span style="font-size:13px; color:#555">70–89% of weighted key fields present</span>
+  </div>
+  <div class="reliability-row">
+    <span class="badge badge-red">Low</span>
+    <div class="reliability-bar-bg"><div class="reliability-bar rel-low" style="width:55%"></div></div>
+    <span style="font-size:13px; color:#555">&lt; 70% of weighted key fields present</span>
+  </div>
+
+  <div class="callout callout-warn">
+    <strong>Zero-fill bias:</strong> The index pipeline uses <code>.fillna(0)</code> before aggregation.
+    For risk metrics (INFORM Severity, Active_Risks_Count), this underestimates vulnerability — missing data
+    is treated as "no crisis." The reliability explainer (Feature 3) must surface this directional bias explicitly.
+  </div>
+
+  <!-- ── Interaction logging ────────────────────────────────────────────────── -->
+  <span class="section-anchor" id="logging"></span>
+  <h2>Interaction logging (HCI research)</h2>
+
+  <p>Every user action is appended to <code>logs/session_{timestamp}.jsonl</code>.
+     One JSON object per line, written by a <code>log_action()</code> helper in <code>streamlit_app.py</code>.
+     Disabled via <code>DISABLE_LOGGING=1</code> env var.</p>
+
+  <div class="callout callout-research">
+    <strong>Research purpose:</strong> These logs capture how decision-makers explore AI-mediated
+    humanitarian data — which features they use, in what order, and what counterfactuals they probe.
+    The logged sequences form the corpus for a future HCI analysis of AI-assisted sensemaking.
+  </div>
+
+  <h3>Schema — one event per line</h3>
+  <div class="log-line">{"ts": "2026-06-17T14:32:01", "session": "abc123", "action": "select_language", "value": "Dari/AFG"}</div>
+  <div class="log-line">{"ts": "2026-06-17T14:32:05", "session": "abc123", "action": "open_reliability_explainer", "value": "Dari/AFG"}</div>
+  <div class="log-line">{"ts": "2026-06-17T14:32:08", "session": "abc123", "action": "counterfactual_slider", "field": "Validated_Hours", "from": 0, "to": 200, "score_delta": -0.04}</div>
+  <div class="log-line">{"ts": "2026-06-17T14:32:22", "session": "abc123", "action": "nl_query", "query": "Find languages in conflict zones...", "rows_returned": 47}</div>
+  <div class="log-line">{"ts": "2026-06-17T14:32:40", "session": "abc123", "action": "weight_adjusted", "pillar": "Crisis Risk", "from": 0.25, "to": 0.35}</div>
+
+  <h3>Logged action types</h3>
+  <table>
+    <thead><tr><th>Action key</th><th>When fired</th><th>Extra fields</th></tr></thead>
+    <tbody>
+      <tr><td><code>select_language</code></td><td>User clicks map bubble or table row</td><td><code>value</code>: "Language/ISO"</td></tr>
+      <tr><td><code>open_reliability_explainer</code></td><td>User expands the reliability section</td><td><code>value</code>: "Language/ISO"</td></tr>
+      <tr><td><code>counterfactual_slider</code></td><td>Slider value changes</td><td><code>field</code>, <code>from</code>, <code>to</code>, <code>score_delta</code></td></tr>
+      <tr><td><code>nl_query</code></td><td>User submits Tab 4 query</td><td><code>query</code>, <code>rows_returned</code></td></tr>
+      <tr><td><code>weight_adjusted</code></td><td>Sidebar weight slider changes</td><td><code>pillar</code>, <code>from</code>, <code>to</code></td></tr>
+      <tr><td><code>filter_applied</code></td><td>Any sidebar filter changes</td><td><code>filter_name</code>, <code>value</code>, <code>rows_shown</code></td></tr>
+    </tbody>
+  </table>
+
+  <!-- ── Build order ────────────────────────────────────────────────────────── -->
+  <span class="section-anchor" id="build-order"></span>
+  <h2>Build order</h2>
+
+  <div class="pipeline">
+    <div class="step-box">
+      <div class="step-num">1</div>
+      <div class="step-title">Data foundation</div>
+      <div class="step-detail"><code>config.py</code> · <code>data_loader.py</code> · <code>reliability.py</code></div>
+    </div>
+    <div class="arrow">→</div>
+    <div class="step-box">
+      <div class="step-num">2</div>
+      <div class="step-title">Charts</div>
+      <div class="step-detail"><code>charts.py</code> — map, radar, mini-bars</div>
+    </div>
+    <div class="arrow">→</div>
+    <div class="step-box">
+      <div class="step-num">3</div>
+      <div class="step-title">App skeleton</div>
+      <div class="step-detail"><code>streamlit_app.py</code> — sidebar + 4 tabs with placeholder content</div>
+    </div>
+    <div class="arrow">→</div>
+    <div class="step-box">
+      <div class="step-num">4</div>
+      <div class="step-title">LLM client</div>
+      <div class="step-detail"><code>llm_client.py</code> — Features 1→3→2→4</div>
+    </div>
+    <div class="arrow">→</div>
+    <div class="step-box">
+      <div class="step-num">5</div>
+      <div class="step-title">Wire + log</div>
+      <div class="step-detail">Connect LLM outputs into UI; add interaction logging</div>
+    </div>
+    <div class="arrow">→</div>
+    <div class="step-box">
+      <div class="step-num">6</div>
+      <div class="step-title">Deploy config</div>
+      <div class="step-detail"><code>requirements.txt</code> · <code>.streamlit/config.toml</code></div>
+    </div>
+  </div>
+
+  <div class="callout callout-tip">
+    <strong>LLM feature order:</strong> Build Feature 1 (summary) first since it exercises the full
+    Claude API call path and caching. Feature 3 (reliability) reuses the same grounding pattern.
+    Feature 2 (NL query) adds structured output parsing. Feature 4 (counterfactual) is last
+    because it requires the normalization recompute logic to be solid first.
+  </div>
+
+  <!-- ── Deployment ─────────────────────────────────────────────────────────── -->
+  <span class="section-anchor" id="deployment"></span>
+  <h2>Deployment</h2>
+
+  <table>
+    <thead><tr><th>Target</th><th>How to run</th><th>API key</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><strong>Local</strong></td>
+        <td><code>cd index &amp;&amp; pipenv run streamlit run app/streamlit_app.py</code></td>
+        <td><code>index/.env</code> file: <code>ANTHROPIC_API_KEY=sk-ant-...</code></td>
+      </tr>
+      <tr>
+        <td><strong>Streamlit Cloud</strong></td>
+        <td>Connect GitHub repo; set <code>Main file path</code> to <code>index/app/streamlit_app.py</code></td>
+        <td>App Settings → Secrets panel: <code>ANTHROPIC_API_KEY = "sk-ant-..."</code></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h3><code>.streamlit/config.toml</code></h3>
+<pre>[theme]
+primaryColor     = "#3498db"
+backgroundColor  = "#f5f6fa"
+secondaryBackgroundColor = "#ffffff"
+textColor        = "#2c3e50"
+font             = "sans serif"
+
+[server]
+headless    = true
+enableCORS  = false
+port        = 8501</pre>
+
+  <h3><code>requirements.txt</code></h3>
+<pre>streamlit>=1.35
+plotly>=5.20
+anthropic>=0.30
+pandas>=2.0
+openpyxl>=3.1
+python-dotenv>=1.0</pre>
+
+  <div class="callout callout-warn">
+    <strong>Gitignore additions needed:</strong>
+    <code>.env</code> · <code>app/logs/</code> · <code>app/.streamlit/secrets.toml</code>
+  </div>
+
+  <!-- ── Verification ───────────────────────────────────────────────────────── -->
+  <span class="section-anchor" id="verification"></span>
+  <h2>Verification checklist</h2>
+
+  <p>Run these checks after each build phase to confirm the app works end-to-end.</p>
+
+  <ul class="checklist">
+    <li>Data loads without error: <code>pipenv run python app/data_loader.py</code> prints 755 rows</li>
+    <li>Reliability scores computed: all rows have <code>reliability_label</code> in {High, Moderate, Low}</li>
+    <li>Map renders: bubbles appear at correct coordinates, colors reflect risk score</li>
+    <li>Sidebar filters reduce the visible rows correctly</li>
+    <li>Weight sliders: adjusting any slider instantly updates the map + table scores</li>
+    <li>Row click in table navigates to Tab 3 detail panel</li>
+    <li>Summary card (Feature 1): opens detail for a language → spinner shows → 3–4 sentences appear with actual numbers</li>
+    <li>Reliability explainer (Feature 3): expand section for a <span class="badge badge-red">Low</span> reliability row → mentions the specific missing fields</li>
+    <li>Counterfactual (Feature 4): move CV hours slider → score updates live → LLM sentence appears mentioning the rank change</li>
+    <li>NL query (Feature 2): type "Find languages in conflict zones with no Common Voice data" → table updates → explanation sentence shown</li>
+    <li>NL query fallback: type something unparseable → friendly error message, no crash</li>
+    <li>Interaction log: <code>logs/</code> directory contains a <code>.jsonl</code> file with one entry per action</li>
+    <li>DISABLE_LOGGING=1: set env var → no log file created, app functions normally</li>
+    <li>No API key in git: <code>git grep ANTHROPIC_API_KEY</code> returns nothing in tracked files</li>
+  </ul>
+
+  <!-- ── VIZ RESEARCH ──────────────────────────────────────────────────────── -->
+  <div class="section-divider">Visualization Research</div>
+
+  <span class="section-anchor" id="viz-overview"></span>
+  <h2>Visualization design proposals</h2>
+
+  <p>
+    Six research-backed design ideas for presenting the LT4CR ranking. Each proposal is evaluated
+    against three criteria: the primary <em>goal</em> of the view, the <em>user type</em> it serves best,
+    and how the published evidence supports its effectiveness at this scale (755 pairs, 5 weighted
+    pillars, inverted metrics, 4-region hierarchy).
+  </p>
+
+  <div class="callout callout-info">
+    <strong>Scale constraint:</strong> 673 languages cannot fit on a standard linear list.
+    Any technique built for "a few dozen ranked items" requires adaptation.
+    The proposals below are selected because they all have explicit strategies for handling
+    hundreds or thousands of items — via aggregation, clustering, or progressive disclosure.
+  </div>
+
+  <table class="comparison-table">
+    <thead>
+      <tr>
+        <th>Design</th>
+        <th>Primary goal</th>
+        <th>Best for</th>
+        <th>Scale strategy</th>
+        <th>Fit</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong><a href="#viz-a">A — Stacked ranking</a></strong></td>
+        <td>Decompose a score into pillar contributions</td>
+        <td>Analysts comparing pairs side by side</td>
+        <td>Fisheye zoom + pagination</td>
+        <td><span class="fit-badge fit-core">Core</span></td>
+      </tr>
+      <tr>
+        <td><strong><a href="#viz-b">B — Collapsible hierarchy</a></strong></td>
+        <td>Navigate region → country → language without overload</td>
+        <td>Program officers scanning by geography</td>
+        <td>Hierarchical aggregation (Taggle)</td>
+        <td><span class="fit-badge fit-core">Core</span></td>
+      </tr>
+      <tr>
+        <td><strong><a href="#viz-c">C — Heatmap matrix</a></strong></td>
+        <td>Expose cross-border language patterns</td>
+        <td>Researchers detecting country/language clusters</td>
+        <td>Sortable rows + columns, blank = no pair</td>
+        <td><span class="fit-badge fit-extend">Extend</span></td>
+      </tr>
+      <tr>
+        <td><strong><a href="#viz-d">D — Bipartite flow</a></strong></td>
+        <td>Show how languages span multiple countries</td>
+        <td>Policy researchers, cross-border coordinators</td>
+        <td>Top-20 default, "Others" bucket, search filter</td>
+        <td><span class="fit-badge fit-extend">Extend</span></td>
+      </tr>
+      <tr>
+        <td><strong><a href="#viz-e">E — Regional equity</a></strong></td>
+        <td>Check whether rankings distribute fairly across regions</td>
+        <td>Funders auditing allocation bias</td>
+        <td>Aggregated distributions, not individual rows</td>
+        <td><span class="fit-badge fit-research">Research</span></td>
+      </tr>
+      <tr>
+        <td><strong><a href="#viz-f">F — Inferred weights</a></strong></td>
+        <td>Discover implicit priorities from example orderings</td>
+        <td>Stakeholders with intuitions they can't quantify</td>
+        <td>~10 example pairs, Ranking SVM inference</td>
+        <td><span class="fit-badge fit-research">Research</span></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <p style="font-size:13px; color:#666; margin-top:-4px;">
+    <span class="fit-badge fit-core">Core</span> — implement in v1 &nbsp;
+    <span class="fit-badge fit-extend">Extend</span> — strong candidate for v2 &nbsp;
+    <span class="fit-badge fit-research">Research</span> — valuable for HCI study, complex to build
+  </p>
+
+  <!-- Design A -->
+  <span class="section-anchor" id="viz-a"></span>
+  <div class="design-card">
+    <div class="design-card-header da-header">
+      <div class="design-label">Design A</div>
+      <div class="design-name">Stacked Multi-Attribute Ranking</div>
+      <div class="design-tag">LineUp-style</div>
+    </div>
+    <div class="design-body">
+      <table>
+        <tbody>
+          <tr>
+            <td>Goal</td>
+            <td>Make visible <em>why</em> a language–country pair ranks where it does — each pillar's
+                contribution to the final score is a separate colored segment in the same row bar.
+                Users can see at a glance whether a high score is driven by crisis risk, language tech
+                absence, or a combination.</td>
+          </tr>
+          <tr>
+            <td>Users</td>
+            <td>NGO analysts comparing multiple pairs; methodology reviewers auditing pillar weights;
+                decision-makers testing "what if I weight crisis higher?" scenarios.</td>
+          </tr>
+          <tr>
+            <td>Supporting papers</td>
+            <td>
+              <span class="paper-ref"><cite>LineUp: Visual Analysis of Multi-Attribute Rankings</cite> — Gratzl, Lex et al., IEEE VIS 2013.
+                Introduces stacked bar columns, sorting, and live weight adjustment as the canonical technique for composite rankings.</span>
+              <span class="paper-ref"><cite>Taggle: Combining Overview and Details in Tabular Data Visualizations</cite> — Stitz &amp; Lex, 2016.
+                Direct LineUp successor; adds hierarchical aggregation for handling thousands of rows (key for 755 pairs).</span>
+              <span class="paper-ref"><cite>Ranked-List Visualization: A Graphical Perception Study</cite> — ACM CHI.
+                Empirically tested scrolled bars, treemaps, and wrapped bars; found wrapped bars optimal for single-item evaluation and global distribution reading.</span>
+            </td>
+          </tr>
+          <tr>
+            <td>Example</td>
+            <td><a href="https://lineup.js.org" target="_blank">lineup.js.org</a> — interactive multi-attribute demo.
+                Also see the <a href="https://jku-vds-lab.at/tools/lineup/" target="_blank">JKU VDS Lab LineUp overview</a>.</td>
+          </tr>
+          <tr>
+            <td>LT4CR adoption</td>
+            <td>
+              Each of the 755 rows shows a master bar (weighted_index) split into 5 colored segments
+              proportional to each pillar's normalized score × weight. <strong>Inverted metrics
+              (Comms &amp; Tech, Language Tech) must be visually normalized</strong> — a low
+              Common Voice count produces a tall bar segment, indicating vulnerability.
+              Sidebar weight sliders recalculate all bars in real time.
+              Fisheye zoom or pagination handles the 755-row list without overplotting.
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Design B -->
+  <span class="section-anchor" id="viz-b"></span>
+  <div class="design-card">
+    <div class="design-card-header db-header">
+      <div class="design-label">Design B</div>
+      <div class="design-name">Hierarchical Collapsible Table</div>
+      <div class="design-tag">Taggle-style</div>
+    </div>
+    <div class="design-body">
+      <table>
+        <tbody>
+          <tr>
+            <td>Goal</td>
+            <td>Let users navigate the 4-region → 48-country → 755-pair hierarchy progressively.
+                Collapsed rows show an aggregate risk glyph; expanding reveals the next level.
+                Users never see all 755 rows at once unless they choose to.</td>
+          </tr>
+          <tr>
+            <td>Users</td>
+            <td>Regional program officers scanning which countries need attention first;
+                funders who think geographically rather than by language family.</td>
+          </tr>
+          <tr>
+            <td>Supporting papers</td>
+            <td>
+              <span class="paper-ref"><cite>Taggle: Combining Overview and Details in Tabular Data Visualizations</cite> — Stitz &amp; Lex, 2016.
+                Designed explicitly for large, complex tables; hierarchical aggregation with per-level visual representations is the key contribution.</span>
+              <span class="paper-ref"><cite>Hierarchical Aggregation for Information Visualization</cite> — Elmqvist &amp; Fekete, IEEE TVCG 2010.
+                Names the interaction vocabulary: drill-down / roll-up, local aggregation control, visual budget — deciding how many items render at once.</span>
+              <span class="paper-ref"><cite>Combining Overview and Details in Tabular Data Visualizations</cite> — cited in NSF survey.
+                Shows nesting granular details inside semantic hierarchies preserves data relationships better than flat sorting.</span>
+            </td>
+          </tr>
+          <tr>
+            <td>Example</td>
+            <td><a href="https://caleydo.org/tools/taggle/" target="_blank">caleydo.org/tools/taggle</a> — live demo of the Taggle system.
+                Also see <a href="https://drmkc.jrc.ec.europa.eu/inform-index" target="_blank">INFORM Risk Index platform</a> for a real-world nested country-risk layout.</td>
+          </tr>
+          <tr>
+            <td>LT4CR adoption</td>
+            <td>
+              Collapsed state: 4 region rows, each showing a distribution bar of weighted_index
+              across its language pairs. Expanding a region: 48 country sub-rows with aggregate
+              median score. Expanding a country: individual language–country pairs with the
+              stacked pillar bars from Design A. This approach means users who only care about
+              "Africa" never render the 400+ Asian language pairs. In Streamlit, implement with
+              <code>st.expander</code> per region/country, lazy-rendering the inner dataframe.
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Design C -->
+  <span class="section-anchor" id="viz-c"></span>
+  <div class="design-card">
+    <div class="design-card-header dc-header">
+      <div class="design-label">Design C</div>
+      <div class="design-name">Sortable Heatmap Matrix</div>
+      <div class="design-tag">Language × Country</div>
+    </div>
+    <div class="design-body">
+      <table>
+        <tbody>
+          <tr>
+            <td>Goal</td>
+            <td>Show the many-to-many structure of the dataset: which languages span multiple countries,
+                and whether the same language has very different risk scores depending on country context.
+                Enables pattern detection across both dimensions simultaneously.</td>
+          </tr>
+          <tr>
+            <td>Users</td>
+            <td>Researchers studying cross-border language dynamics;
+                analysts looking for country-level clusters (e.g., "all East African languages
+                score similarly").</td>
+          </tr>
+          <tr>
+            <td>Supporting papers</td>
+            <td>
+              <span class="paper-ref"><cite>Ranked-List Visualization: A Graphical Perception Study</cite> — ACM CHI.
+                Evaluated treemaps as surprisingly accurate for reading individual cell values — relevant since a heatmap is a structured treemap variant.</span>
+              <span class="paper-ref"><cite>Hierarchical Aggregation for Information Visualization</cite> — Elmqvist &amp; Fekete.
+                Matrix views sorted by hierarchical clustering are the recommended fallback when bipartite connections don't map to a clean tree.</span>
+            </td>
+          </tr>
+          <tr>
+            <td>Example</td>
+            <td><a href="https://observablehq.com/@d3/clustered-heatmap" target="_blank">Observable — D3 Clustered Heatmap</a> — sortable rows and columns via hierarchical clustering.
+                Also see <a href="https://vega.github.io/vega-lite/examples/rect_heatmap_weather.html" target="_blank">Vega-Lite heatmap example</a>.</td>
+          </tr>
+          <tr>
+            <td>LT4CR adoption</td>
+            <td>
+              Rows = languages (up to 673); columns = countries (48); cell color = weighted_index
+              on a green→red scale; blank cell = this language not present in this country.
+              Sort rows by average score across countries, or by language family.
+              Sort columns by regional grouping (4 region bands as column separators).
+              Clicking a cell opens the Tab 3 language detail panel.
+              At 673 × 48, most cells will be blank (only 755 / (673 × 48) ≈ 2.3% fill rate),
+              so the matrix is sparse — that sparsity is itself informative (most languages
+              are country-specific, not cross-border).
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Design D -->
+  <span class="section-anchor" id="viz-d"></span>
+  <div class="design-card">
+    <div class="design-card-header dd-header">
+      <div class="design-label">Design D</div>
+      <div class="design-name">Bipartite Sankey Flow</div>
+      <div class="design-tag">Language ↔ Country</div>
+    </div>
+    <div class="design-body">
+      <table>
+        <tbody>
+          <tr>
+            <td>Goal</td>
+            <td>Expose the geographic spread of cross-border languages — Arabic, French, Spanish,
+                Swahili each spoken in multiple countries with varying risk scores.
+                The view answers: "where does this language appear globally and how does
+                its risk vary by country context?"</td>
+          </tr>
+          <tr>
+            <td>Users</td>
+            <td>Language policy researchers; cross-border humanitarian coordinators planning
+                multilingual crisis communication campaigns.</td>
+          </tr>
+          <tr>
+            <td>Supporting papers</td>
+            <td>
+              <span class="paper-ref"><cite>The Science of Visual Data Communication: What Works</cite> — Franconeri et al., Psychological Science in the Public Interest, 2021.
+                Documents how continuous paths and flow links reduce cognitive friction when tracking multi-tiered dependencies — the core perceptual justification for Sankey.</span>
+              <span class="paper-ref"><cite>FairSpace: An Interactive Visualization System for Multi-Attribute Rankings</cite> — Wiley.
+                Reviews Podium and FairFuse; discusses bipartite layouts as a way to decompose where ranking inequities originate.</span>
+            </td>
+          </tr>
+          <tr>
+            <td>Example</td>
+            <td><a href="https://sankeymatic.com/build/" target="_blank">SankeyMATIC flow builder</a> — for prototyping flow layouts.
+                For a production implementation, see <a href="https://plotly.com/python/sankey-diagram/" target="_blank">Plotly Sankey diagrams</a> (already in our stack).</td>
+          </tr>
+          <tr>
+            <td>LT4CR adoption</td>
+            <td>
+              Left column: 48 country nodes, color-coded by region.
+              Right column: 673 language nodes, collapsed into "Others" unless a language appears
+              in ≥ 3 countries or is selected via search.
+              Ribbon thickness = weighted_index of the pair.
+              Clicking a language node dims everything else and highlights all country connections,
+              revealing its global spread (Dual-End Highlighting).
+              Plotly's built-in Sankey supports this with <code>go.Sankey</code> — already in our
+              dependency tree. The main challenge is performance: 755 ribbons at once may be slow;
+              a Top-20-by-score default filter is needed with a "show all" toggle.
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Design E -->
+  <span class="section-anchor" id="viz-e"></span>
+  <div class="design-card">
+    <div class="design-card-header de-header">
+      <div class="design-label">Design E</div>
+      <div class="design-name">Regional Equity View</div>
+      <div class="design-tag">FairSight-style</div>
+    </div>
+    <div class="design-body">
+      <table>
+        <tbody>
+          <tr>
+            <td>Goal</td>
+            <td>Ask whether the ranking <em>distributes attention equitably</em> across the 4 regions.
+                Is Africa systematically over- or under-represented in the top-50 highest-risk pairs
+                relative to its share of the dataset? This reframes the question from "here is the
+                ranking" to "here is whether the ranking is fair across regional lines."</td>
+          </tr>
+          <tr>
+            <td>Users</td>
+            <td>Funders checking for structural bias in how the index allocates priority;
+                researchers studying whether the composite metric inadvertently penalizes
+                regions with better reporting (more data → lower apparent risk).</td>
+          </tr>
+          <tr>
+            <td>Supporting papers</td>
+            <td>
+              <span class="paper-ref"><cite>FairSight: Visual Analytics for Fairness in Decision Making</cite> — cited in FairSpace survey.
+                Introduces Group-Fairness DCG: whether top-k positions distribute proportionately across predefined groups (regions, in our case).</span>
+              <span class="paper-ref"><cite>FairSpace: An Interactive Visualization System for Multi-Attribute Rankings</cite> — Wiley, 2022.
+                Reviews state-of-the-art interactive systems (Podium, FairFuse) that enforce fairness on multi-attribute datasets.</span>
+              <span class="paper-ref"><cite>Interactive Explainable Ranking</cite> — ACM CHI, April 2026.
+                Formalizes explainable ranking tasks reflecting real-world use cases; includes fairness as a first-class concern alongside explanation.</span>
+            </td>
+          </tr>
+          <tr>
+            <td>Example</td>
+            <td><a href="https://drmkc.jrc.ec.europa.eu/inform-index" target="_blank">INFORM Risk Index platform</a> — regional distribution panels.
+                For the distribution chart style, see <a href="https://plotly.com/python/violin/" target="_blank">Plotly violin / ridgeline plots</a>.</td>
+          </tr>
+          <tr>
+            <td>LT4CR adoption</td>
+            <td>
+              A side-by-side panel showing the distribution of weighted_index scores per region
+              (violin or box plots). A Group-Fairness metric answers: of the top-k highest-risk
+              pairs, what fraction comes from each region, and does that match each region's
+              proportional share of the 755 pairs? A possible finding: if most top-50 pairs
+              are in Asia but Africa has 40% of the dataset, the index may be under-flagging
+              African language risk — possibly because ACAPS data is sparser for Africa
+              (stable-country null effect). This connects directly to the reliability scoring
+              system already planned.
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Design F -->
+  <span class="section-anchor" id="viz-f"></span>
+  <div class="design-card">
+    <div class="design-card-header df-header">
+      <div class="design-label">Design F</div>
+      <div class="design-name">Inferred Weight Discovery</div>
+      <div class="design-tag">Podium-style</div>
+    </div>
+    <div class="design-body">
+      <table>
+        <tbody>
+          <tr>
+            <td>Goal</td>
+            <td>Let stakeholders reveal their implicit priorities by example — drag ~10 language
+                pairs into an order that matches their intuition, and the system backs out what
+                pillar weighting is consistent with that ordering. This turns weight-setting from
+                a guessing exercise into a reflective, evidence-grounded conversation.</td>
+          </tr>
+          <tr>
+            <td>Users</td>
+            <td>NGO directors or funders who have strong domain opinions about which communities
+                matter most but cannot translate those opinions into a percentage breakdown.
+                Also valuable as an HCI research probe: what implicit values do users reveal
+                when they order pairs by intuition?</td>
+          </tr>
+          <tr>
+            <td>Supporting papers</td>
+            <td>
+              <span class="paper-ref"><cite>Podium: Ranking Data Using Mixed-Initiative Visual Analytics</cite> — Wall, Das et al., IEEE TVCG 2018.
+                Rather than asking users to specify weights directly, Podium infers a Ranking SVM model from user-provided example orderings, then explains which attributes the implied weighting depends on.</span>
+              <span class="paper-ref"><cite>Interactive Explainable Ranking</cite> — ACM CHI, April 2026.
+                Evaluates systems on real-world ranking tasks; the mixed-initiative paradigm (user provides examples, system infers model) is identified as the most effective interaction mode for non-expert users.</span>
+              <span class="paper-ref"><cite>LineUp: Visual Analysis of Multi-Attribute Rankings</cite> — Gratzl et al., IEEE VIS 2013.
+                The complementary direction: while LineUp starts from weights and shows the ranking, Podium starts from a ranking and recovers the weights.</span>
+            </td>
+          </tr>
+          <tr>
+            <td>Example</td>
+            <td><a href="https://github.com/leibatt/podium" target="_blank">Podium on GitHub</a> — the original research prototype.
+                For the Ranking SVM logic, see the <a href="https://www.cs.cornell.edu/people/tj/svm_light/svm_rank.html" target="_blank">SVM-Rank library</a>.</td>
+          </tr>
+          <tr>
+            <td>LT4CR adoption</td>
+            <td>
+              Present the user with ~10 randomly-sampled language pairs.
+              They drag them into a priority order.
+              A backend call runs a simple Ranking SVM (scikit-learn
+              <code>LinearSVC</code> on pairwise preference vectors) across the 5 pillar scores
+              to recover the implied weights.
+              The result is displayed as: "Your ordering implies Crisis Risk matters 3× more
+              than Language Tech, and Social &amp; Economic is treated as nearly irrelevant."
+              The user can then accept this weighting (it populates the sidebar sliders) or
+              adjust. This doubles as an HCI research instrument: log the user's intuitive
+              ordering alongside their inferred weights for post-session analysis.
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ── VERSION HISTORY ───────────────────────────────────────────────────── -->
+  <div class="section-divider">Version History</div>
+
+  <!-- ── v0.5.1 ─────────────────────────────────────────────────────────────── -->
+  <span class="section-anchor" id="version-v051"></span>
+  <h2>v0.5.1 — Data reliability panel <span class="badge badge-green" style="font-size:12px;vertical-align:middle">shipped</span></h2>
+
+  <p>
+    Adds two reliability-focused features on top of v0.5. No data changes, no structural changes —
+    all computed from the same baked CSV at page load.
+  </p>
+
+  <h3>What changed from v0.5</h3>
+  <table>
+    <thead><tr><th>Area</th><th>Before</th><th>v0.5.1</th></tr></thead>
+    <tbody>
+      <tr>
+        <td>Pillar info card — Coverage column</td>
+        <td>Card showed sub-indicator name, source, frequency, and normalization formula only</td>
+        <td>A fifth column shows a fill bar + percentage of the 755 rows with non-null data for that
+          sub-indicator. For inverted indicators (null → zero-fill → inverted), a
+          <strong>↑ over</strong> / <strong>↓ under</strong> bias label (with tooltip) signals
+          whether missing data overestimates or underestimates vulnerability.</td>
+      </tr>
+      <tr>
+        <td>Data reliability panel</td>
+        <td>No dataset-wide reliability view existed</td>
+        <td>A persistent <strong>Data reliability</strong> button (amber, top bar) opens a
+          full-width panel below the header. The panel shows:<br>
+          <ul style="margin:6px 0 0 1em;padding:0">
+            <li><strong>Summary row</strong>: High ≥90% / Moderate 70–89% / Low &lt;70% row
+              counts (weighted by pillar weight × fraction of sub-indicators present per row)</li>
+            <li><strong>Per-indicator table</strong> grouped by pillar: overall coverage % with
+              country count for country-level indicators (e.g. <em>37/48 countries</em>), four
+              mini fill bars for Africa / Asia / N. America / S. America, and bias direction</li>
+          </ul>
+          The regional breakdown immediately surfaces geographic gaps — e.g. Active Risks
+          (ACAPS) is 0% for S. America and 19% for N. America because ACAPS only tracks
+          active crisis contexts.
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="callout callout-tip">
+    <strong>Reliability computation:</strong> Each row's reliability score is the weighted sum
+    of per-pillar completeness fractions using the default pillar weights (Linguistic 20%,
+    Crisis Risk 25%, Comms &amp; Tech 15%, Language Tech 25%, Social &amp; Econ 15%). A pillar
+    contributes its full weight only if all its sub-indicators are non-null. The score is
+    computed from default weights regardless of any user slider adjustments, since it reflects
+    a structural property of the dataset.
+  </div>
+
+  <!-- ── v0.5 ───────────────────────────────────────────────────────────────── -->
+  <span class="section-anchor" id="version-v05"></span>
+  <h2>v0.5 — UX polish &amp; source transparency <span class="badge badge-blue" style="font-size:12px;vertical-align:middle">superseded</span></h2>
+
+  <p>
+    A focused UX release on top of v0.3 — no data changes, no stack changes. The goal was to make
+    the existing data more legible and the interface more discoverable.
+  </p>
+
+  <h3>What changed from v0.3</h3>
+  <table>
+    <thead><tr><th>Area</th><th>Before</th><th>v0.5</th></tr></thead>
+    <tbody>
+      <tr>
+        <td>Horizontal space</td>
+        <td>LineUp clipped at viewport width; aggregate group column often hidden</td>
+        <td><code>#app</code> scrolls horizontally; <code>min-width: 640px</code> on the table prevents collapse</td>
+      </tr>
+      <tr>
+        <td>Aggregate column</td>
+        <td>Default narrow width; arrow to collapse/expand groups not discoverable</td>
+        <td>Column widened to 140 px; explicit <strong>Collapse regions</strong> / <strong>Expand regions</strong> toggle button in the header</td>
+      </tr>
+      <tr>
+        <td>Docs link</td>
+        <td>No link to documentation from the explorer</td>
+        <td><strong>About the index ↗</strong> button in the top bar, always visible</td>
+      </tr>
+      <tr>
+        <td>Interaction hint</td>
+        <td>No affordance explaining how region rows work</td>
+        <td>Slim hint bar below the header: "Click a region row to expand / collapse · Click a column header to re-sort"</td>
+      </tr>
+      <tr>
+        <td>Pillar level</td>
+        <td>No signal distinguishing language-level vs country-level pillars</td>
+        <td>Pillar buttons grouped in mode-bar under <strong>language-level</strong> and <strong>country-level</strong> section headers</td>
+      </tr>
+      <tr>
+        <td>Source transparency</td>
+        <td>Sub-indicator sources only visible in the row side panel</td>
+        <td>Dismissible <strong>pillar info card</strong> appears above the table when entering drill-down mode: lists every sub-indicator with source, update frequency, and normalization formula</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- ── v0.3 ───────────────────────────────────────────────────────────────── -->
+  <span class="section-anchor" id="version-v03"></span>
+  <h2>v0.3 — Precomputed data &amp; live weight adjustment <span class="badge badge-blue" style="font-size:12px;vertical-align:middle">superseded</span></h2>
+
+  <p>
+    Two improvements over v0.2: the contribution columns are baked into the data file rather than
+    computed in the browser, and users can adjust pillar weights in the explorer header.
+  </p>
+
+  <h3>What changed from v0.2</h3>
+  <table>
+    <thead><tr><th>Area</th><th>v0.2</th><th>v0.3</th></tr></thead>
+    <tbody>
+      <tr>
+        <td>Contrib columns</td>
+        <td>Computed in browser on CSV load (<code>__contrib</code>)</td>
+        <td>Precomputed by <code>build_index.py</code>, stored in data (<code>_contrib</code>)</td>
+      </tr>
+      <tr>
+        <td>Methodology source</td>
+        <td>Jupyter notebooks (<code>02_index_creation.ipynb</code>)</td>
+        <td>Standalone script (<code>build_index.py</code>), self-contained</td>
+      </tr>
+      <tr>
+        <td>Data file</td>
+        <td><code>Final_Index.xlsx</code> (77 cols)</td>
+        <td><code>Final_Index_v2.xlsx</code> (100 cols, +20 <code>_contrib</code>)</td>
+      </tr>
+      <tr>
+        <td>Pillar weights</td>
+        <td>Fixed; published defaults only</td>
+        <td>User-adjustable via header sliders; rebalanced automatically</td>
+      </tr>
+      <tr>
+        <td>Side panel score</td>
+        <td>Shows published weighted_index from data</td>
+        <td>Shows live recomputed score with current weight annotation</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- ── v0.2 ───────────────────────────────────────────────────────────────── -->
+  <span class="section-anchor" id="version-v02"></span>
+  <h2>v0.2 — Two-level LineUp.js Explorer <span class="badge badge-green" style="font-size:12px;vertical-align:middle">shipped</span></h2>
+
+  <p>
+    Redesigned the column structure around two modes and added a row-level side panel.
+    Same stack as v0 (static HTML, LineUp.js, no server). Key insight: distinguishing
+    <strong>context columns</strong> (who a row is) from <strong>score columns</strong> (how it ranks),
+    and letting users go deeper on either dimension.
+  </p>
+
+  <p>Implemented Design A (overview ↔ pillar drill-down via column swap) and Design C (row side panel).
+  Sub-indicator contribution columns (<code>__contrib</code>) were computed in-browser at CSV load time
+  — replaced in v0.3 with precomputed <code>_contrib</code> columns in the data file.</p>
+
+  <!-- ── v0 ────────────────────────────────────────────────────────────────── -->
+  <span class="section-anchor" id="version-v0"></span>
+  <h2>v0 — Static LineUp.js Explorer</h2>
+
+  <p>
+    A self-contained, single-file HTML explorer deployed as a GitHub Pages static site.
+    All 755 rows baked into the HTML at build time as an inline CSV string.
+  </p>
+
+  <table>
+    <thead><tr><th>Attribute</th><th>Detail</th></tr></thead>
+    <tbody>
+      <tr><td>Status</td><td><span class="badge badge-blue">Superseded</span> — v0.3 is current</td></tr>
+      <tr><td>Stack</td><td>Plain HTML/JS · LineUp.js v4.16.0 (CDN) · <code>LocalDataProvider</code> + <code>Taggle</code></td></tr>
+      <tr><td>Data loading</td><td>Build: <code>build.py</code> bakes xlsx → CSV → <code>window.__BAKED_CSV__</code>. Dev: <code>serve.py</code> serves <code>data/</code> at <code>:8010</code>.</td></tr>
+      <tr><td>Default view</td><td>All ~77 columns via <code>provider.deriveDefault()</code>. Sorted by <code>weighted_index</code> descending. Grouped by <code>Region</code>.</td></tr>
+    </tbody>
+  </table>
+
+  <div class="callout callout-warn">
+    <strong>Known limitation (motivation for v0.2):</strong> <code>deriveDefault()</code> dumps all ~77 columns
+    including raw normalization intermediates with no grouping. Users had no structure to navigate —
+    pillar scores and sub-indicator columns sat side-by-side with ISO codes and language family names.
+  </div>
+
+  <!-- ── Legacy ────────────────────────────────────────────────────────────── -->
+  <span class="section-anchor" id="version-legacy"></span>
+  <h2>Legacy pilot — Streamlit attempt (archived)</h2>
+
+  <p>
+    The first attempt at a UI embedded LineUp.js inside a Streamlit app via an HTML component / iframe.
+    Shared backend code was written (<code>data_loader.py</code>, <code>reliability.py</code>,
+    <code>llm_client.py</code>, <code>config.py</code>) and a <code>pilot_a/</code> directory
+    was scaffolded with <code>app.py</code>, <code>charts.py</code>, and <code>lineup.py</code>.
+  </p>
+
+  <table>
+    <thead><tr><th>Attribute</th><th>Detail</th></tr></thead>
+    <tbody>
+      <tr><td>Status</td><td><span class="badge badge-red">Archived</span> — moved to <code>index/04-archive/pilots-streamlit-attempt/</code></td></tr>
+      <tr><td>Stack</td><td>Streamlit · Plotly · LineUp.js (iframe embed) · Claude API (Haiku)</td></tr>
+      <tr><td>Why abandoned</td><td>LineUp.js does not render reliably inside Streamlit HTML components / iframes. The rendering lifecycle conflicts with Streamlit's re-run model. Pivoted to a pure static HTML approach instead.</td></tr>
+      <tr><td>What was salvaged</td><td>The reliability scoring design, LLM feature specs, and viz research proposals (Designs A–F) are all still relevant and documented in this file for future reference.</td></tr>
+    </tbody>
+  </table>
+
+  <div class="file-tree">
+<span class="dir">index/04-archive/pilots-streamlit-attempt/</span>
+├── <span class="dir">shared/</span>
+│   ├── <span class="file">config.py</span>         <span class="note">← pillar defs, weights, column labels, prompt templates</span>
+│   ├── <span class="file">data_loader.py</span>    <span class="note">← load original_index, parse drivers via ast.literal_eval</span>
+│   ├── <span class="file">reliability.py</span>    <span class="note">← per-row data completeness score (0–100%)</span>
+│   └── <span class="file">llm_client.py</span>     <span class="note">← Feature 1 (summary) + Feature 3 (reliability explainer)</span>
+└── <span class="dir">pilot_a/</span>
+    ├── <span class="file">app.py</span>            <span class="note">← Streamlit entry point (4-tab layout)</span>
+    ├── <span class="file">charts.py</span>         <span class="note">← stacked bar, radar chart, pillar mini-bars (Plotly)</span>
+    ├── <span class="file">lineup.py</span>         <span class="note">← LineUp.js iframe embed attempt</span>
+    └── <span class="dir">logs/</span>             <span class="note">← session_{ts}.jsonl interaction logs</span>
+  </div>
+
+</main>
+</div>
+</body>
+</html>
