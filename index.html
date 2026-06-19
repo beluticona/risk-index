@@ -114,13 +114,14 @@
         display: flex;
         flex: 1 1 auto;
         min-height: 0;
-        overflow: hidden;
+        overflow-x: auto;
+        overflow-y: hidden;
       }
 
       #lineup {
         background: var(--panel);
         flex: 1 1 auto;
-        min-width: 0;
+        min-width: 640px;
         overflow: hidden;
       }
 
@@ -402,6 +403,31 @@
       .w-total.ok   { color: #27ae60; }
       .w-total.warn { color: #e67e22; }
 
+      /* ── Docs link ── */
+      .docs-btn {
+        background: #f0f4ff;
+        border: 1px solid #c5d2ee;
+        border-radius: var(--radius);
+        color: var(--accent);
+        font-size: 12px;
+        font-weight: 600;
+        padding: 4px 10px;
+        text-decoration: none;
+        white-space: nowrap;
+        flex-shrink: 0;
+      }
+      .docs-btn:hover { background: #e3eaff; }
+
+      /* ── Interaction hint ── */
+      #hint-bar {
+        border-top: 1px solid var(--border);
+        color: var(--muted);
+        font-size: 11px;
+        margin-top: 6px;
+        padding-top: 5px;
+      }
+      #hint-bar strong { color: var(--text); font-weight: 600; }
+
       #btn-reset-weights {
         background: none;
         border: 1px solid var(--border);
@@ -439,10 +465,10 @@
     <header>
       <div class="topline">
         <h1>LT4CR Risk Index Explorer</h1>
+        <a href="./docs/" class="docs-btn" target="_blank">About the index ↗</a>
         <span id="status">Loading…</span>
         <div id="mode-bar">
           <button id="btn-overview" class="mode-btn active">Overview mode</button>
-          <a href="./docs/" class="mode-btn" target="_blank" style="text-decoration:none">Docs</a>
         </div>
       </div>
       <div id="weight-bar">
@@ -450,6 +476,10 @@
         <!-- slider groups injected by JS -->
         <span id="w-total" class="w-total"></span>
         <button id="btn-reset-weights">Reset</button>
+      </div>
+      <div id="hint-bar">
+        <strong>Click a region row</strong> to expand / collapse its languages &nbsp;·&nbsp;
+        <strong>Click any column header</strong> to re-sort the ranking
       </div>
     </header>
 
@@ -1045,7 +1075,7 @@
 
         const lineup = new LineUpJS.Taggle(container, provider, {
           rowHeight: px(24),
-          groupHeight: px(36),
+          groupHeight: px(48),
         });
         lineup.update();
 
