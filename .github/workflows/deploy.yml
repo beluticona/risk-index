@@ -40,3 +40,11 @@ jobs:
           publish_dir: dist
           destination_dir: ${{ steps.ver.outputs.slug }}
           keep_files: true
+
+      - name: Deploy docs to stable URL
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: docs
+          destination_dir: docs
+          keep_files: true
