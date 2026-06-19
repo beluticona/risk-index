@@ -53,9 +53,10 @@ def main() -> None:
     dest.write_text(out, encoding="utf-8")
     print(f"Built → {dest}  ({dest.stat().st_size / 1024:.0f} KB)")
 
-    docs_src = HERE / "docs.html"
+    docs_src = HERE / "docs" / "index.html"
     if docs_src.exists():
-        docs_dest = DIST / "docs.html"
+        docs_dest = DIST / "docs" / "index.html"
+        docs_dest.parent.mkdir(exist_ok=True)
         docs_dest.write_text(docs_src.read_text(encoding="utf-8"), encoding="utf-8")
         print(f"Copied → {docs_dest}  ({docs_dest.stat().st_size / 1024:.0f} KB)")
 
