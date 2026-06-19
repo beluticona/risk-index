@@ -403,6 +403,30 @@
       .w-total.ok   { color: #27ae60; }
       .w-total.warn { color: #e67e22; }
 
+      /* ── Pillar groups in mode-bar ── */
+      .mode-separator {
+        align-self: center;
+        background: var(--border);
+        flex-shrink: 0;
+        height: 18px;
+        width: 1px;
+      }
+
+      .pillar-group {
+        align-items: center;
+        display: flex;
+        gap: 6px;
+      }
+
+      .pillar-group-label {
+        color: var(--muted);
+        font-size: 10px;
+        font-weight: 700;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        white-space: nowrap;
+      }
+
       /* ── Docs link ── */
       .docs-btn {
         background: #f0f4ff;
@@ -440,6 +464,102 @@
 
       #btn-reset-weights:hover { background: #f0f2f5; color: var(--text); }
 
+      /* ── Pillar info card ── */
+      #pillar-info {
+        background: var(--panel);
+        border-bottom: 1px solid var(--border);
+        border-top: 3px solid var(--pinfo-color, var(--accent));
+        flex-shrink: 0;
+        padding: 10px 16px 12px;
+      }
+
+      .pinfo-header {
+        align-items: center;
+        display: flex;
+        gap: 8px;
+        margin-bottom: 8px;
+      }
+
+      .pinfo-dot {
+        background: var(--pinfo-color, var(--accent));
+        border-radius: 50%;
+        flex-shrink: 0;
+        height: 10px;
+        width: 10px;
+      }
+
+      .pinfo-title {
+        font-size: 13px;
+        font-weight: 700;
+      }
+
+      .pinfo-level {
+        background: #f0f2f5;
+        border-radius: 4px;
+        color: var(--muted);
+        font-size: 10px;
+        font-weight: 700;
+        letter-spacing: 0.06em;
+        padding: 2px 6px;
+        text-transform: uppercase;
+      }
+
+      .pinfo-close {
+        background: none;
+        border: none;
+        color: var(--muted);
+        cursor: pointer;
+        font-size: 18px;
+        line-height: 1;
+        margin-left: auto;
+        padding: 0 2px;
+      }
+
+      .pinfo-close:hover { color: var(--text); }
+
+      .pinfo-table {
+        border-collapse: collapse;
+        font-size: 12px;
+        width: 100%;
+      }
+
+      .pinfo-table th {
+        background: none;
+        border-bottom: 1px solid var(--border);
+        color: var(--muted);
+        font-size: 10px;
+        font-weight: 700;
+        letter-spacing: 0.05em;
+        padding: 3px 8px 4px;
+        text-align: left;
+        text-transform: uppercase;
+      }
+
+      .pinfo-table td {
+        border-bottom: 1px solid #f3f4f6;
+        padding: 5px 8px;
+        vertical-align: middle;
+      }
+
+      .pinfo-table tr:last-child td { border-bottom: none; }
+
+      .pinfo-indicator { color: var(--text); font-weight: 600; }
+
+      .pinfo-source a {
+        color: var(--accent);
+        text-decoration: none;
+      }
+      .pinfo-source a:hover { text-decoration: underline; }
+
+      .pinfo-formula {
+        background: #f0f0f0;
+        border-radius: 3px;
+        font-family: "SF Mono", "Fira Code", monospace;
+        font-size: 10px;
+        padding: 1px 5px;
+        white-space: nowrap;
+      }
+
       /* ── LineUp overrides ── */
       .lu-col-header,
       .lu-col-header .lu-label,
@@ -469,6 +589,15 @@
         <span id="status">Loading…</span>
         <div id="mode-bar">
           <button id="btn-overview" class="mode-btn active">Overview mode</button>
+          <button id="btn-collapse" class="mode-btn" title="Collapse all regions into summary rows">Collapse regions</button>
+          <span class="mode-separator"></span>
+          <div class="pillar-group" id="group-language">
+            <span class="pillar-group-label">language-level</span>
+          </div>
+          <span class="mode-separator"></span>
+          <div class="pillar-group" id="group-country">
+            <span class="pillar-group-label">country-level</span>
+          </div>
         </div>
       </div>
       <div id="weight-bar">
@@ -479,9 +608,32 @@
       </div>
       <div id="hint-bar">
         <strong>Click a region row</strong> to expand / collapse its languages &nbsp;·&nbsp;
-        <strong>Click any column header</strong> to re-sort the ranking
+        <strong>Click a column header</strong> to re-sort &nbsp;·&nbsp;
+        country-level pillars share the same value for all languages in a country
       </div>
     </header>
+
+    <div id="pillar-info" hidden>
+      <div class="pinfo-header">
+        <span class="pinfo-dot"></span>
+        <strong class="pinfo-title"></strong>
+        <span class="pinfo-level"></span>
+        <button class="pinfo-close" onclick="document.getElementById('pillar-info').hidden=true">×</button>
+      </div>
+      <div class="pinfo-body">
+        <table class="pinfo-table">
+          <thead>
+            <tr>
+              <th>Sub-indicator</th>
+              <th>Source</th>
+              <th>Update frequency</th>
+              <th>Normalization</th>
+            </tr>
+          </thead>
+          <tbody class="pinfo-rows"></tbody>
+        </table>
+      </div>
+    </div>
 
     <div id="app">
       <main id="lineup"></main>
@@ -1073,6 +1225,18 @@
         const regionCol = byCol("Region");
         if (regionCol) ranking.groupBy(regionCol);
 
+        const aggCol = ranking.find((c) => c.desc && c.desc.type === "aggregate");
+        if (aggCol) {
+          aggCol.setWidth(px(140));
+          // Wire the "Collapse regions" button
+          const collapseBtn = document.getElementById("btn-collapse");
+          if (collapseBtn) {
+            collapseBtn._aggCol = aggCol;
+            collapseBtn._provider = provider;
+            collapseBtn._ranking = ranking;
+          }
+        }
+
         const lineup = new LineUpJS.Taggle(container, provider, {
           rowHeight: px(24),
           groupHeight: px(48),
@@ -1090,6 +1254,32 @@
         });
       }
 
+      // ── Pillar info card ─────────────────────────────────────────────────────
+
+      function showPillarInfo(pillar) {
+        const card = document.getElementById("pillar-info");
+        card.style.setProperty("--pinfo-color", pillar.color);
+        card.querySelector(".pinfo-dot").style.background = pillar.color;
+        card.querySelector(".pinfo-title").textContent = pillar.fullLabel;
+        card.querySelector(".pinfo-level").textContent =
+          pillar.level === "country" ? "country-level" : "language-level";
+
+        const tbody = card.querySelector(".pinfo-rows");
+        tbody.innerHTML = pillar.subCols
+          .map(
+            (s) => `
+          <tr>
+            <td class="pinfo-indicator">${s.label}</td>
+            <td class="pinfo-source"><a href="${s.url}" target="_blank" rel="noopener">${s.source}</a></td>
+            <td>${s.freq}</td>
+            <td><span class="pinfo-formula">${s.formula}</span></td>
+          </tr>`
+          )
+          .join("");
+
+        card.hidden = false;
+      }
+
       // ── Mode switching ───────────────────────────────────────────────────────
 
       function setMode(mode) {
@@ -1103,6 +1293,13 @@
         document.querySelectorAll(".pillar-btn").forEach((btn) => {
           btn.classList.toggle("active", btn.dataset.pillar === mode);
         });
+
+        if (mode === "overview") {
+          document.getElementById("pillar-info").hidden = true;
+        } else {
+          const pillar = PILLARS.find((p) => p.key === mode);
+          if (pillar) showPillarInfo(pillar);
+        }
       }
 
       // ── Side panel ───────────────────────────────────────────────────────────
@@ -1228,8 +1425,7 @@
       // Build weight bar
       buildWeightBar();
 
-      // Inject pillar drill-down buttons
-      const modeBar = document.querySelector("#mode-bar");
+      // Inject pillar drill-down buttons into their level groups
       PILLARS.forEach((p) => {
         const btn = document.createElement("button");
         btn.className = "pillar-btn";
@@ -1238,12 +1434,26 @@
         btn.title = p.fullLabel;
         btn.style.setProperty("--pillar-color", p.color);
         btn.addEventListener("click", () => setMode(p.key));
-        modeBar.appendChild(btn);
+        const container = document.getElementById(
+          p.level === "language" ? "group-language" : "group-country"
+        );
+        container.appendChild(btn);
       });
 
       document
         .querySelector("#btn-overview")
         .addEventListener("click", () => setMode("overview"));
+
+      // Collapse / expand all region groups
+      let groupsCollapsed = false;
+      document.getElementById("btn-collapse").addEventListener("click", () => {
+        const btn = document.getElementById("btn-collapse");
+        if (!btn._aggCol) return;
+        groupsCollapsed = !groupsCollapsed;
+        btn.textContent = groupsCollapsed ? "Expand regions" : "Collapse regions";
+        btn.classList.toggle("active", groupsCollapsed);
+        btn._aggCol.setCollapseAll(groupsCollapsed);
+      });
 
       // Rebuild on resize so scale() is re-evaluated
       let resizeTimer = null;

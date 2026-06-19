@@ -259,7 +259,8 @@
     <li><a href="#viz-f">F. Inferred weights</a></li>
 
     <li class="section">Version History</li>
-    <li><a href="#version-v03">v0.3 — current</a></li>
+    <li><a href="#version-v05">v0.5 — current</a></li>
+    <li><a href="#version-v03">v0.3 — precomputed data</a></li>
     <li><a href="#version-v02">v0.2 — two-level</a></li>
     <li><a href="#version-v0">v0 — static</a></li>
     <li><a href="#version-legacy">Legacy pilot (archive)</a></li>
@@ -279,7 +280,7 @@
 
   <div class="callout callout-info">
     <strong>Where things stand:</strong>
-    The <strong>LineUp.js explorer (v0.3)</strong> is deployed on GitHub Pages and is the current
+    The <strong>LineUp.js explorer (v0.5)</strong> is deployed on GitHub Pages and is the current
     working tool. A <strong>Streamlit + Claude API app</strong> with maps, LLM narrative, and
     counterfactual analysis is planned next. This document covers both.
   </div>
@@ -316,8 +317,8 @@
   <h2>Quick start</h2>
 
   <h3>Access the deployed tool</h3>
-  <p>The v0.3 explorer is live on GitHub Pages. Open it in any modern browser:</p>
-  <div class="file-tree">https://beluticona.github.io/risk-index/v0.3/</div>
+  <p>The v0.5 explorer is live on GitHub Pages. Open it in any modern browser:</p>
+  <div class="file-tree">https://beluticona.github.io/risk-index/v0.5/</div>
 
   <h3>Run locally</h3>
   <p>The explorer works without any build step — <code>serve.py</code> converts the Excel file to CSV on the fly:</p>
@@ -350,7 +351,7 @@ python serve.py           <span class="note"># starts local server at http://127
   </div>
 
   <!-- ── Current Explorer ──────────────────────────────────────────────────── -->
-  <div class="section-divider">Current Explorer — v0.3 (shipped)</div>
+  <div class="section-divider">Current Explorer — v0.5 (shipped)</div>
 
   <span class="section-anchor" id="explorer-features"></span>
   <h2>How the explorer works</h2>
@@ -1601,9 +1602,55 @@ python-dotenv>=1.0</pre>
   <!-- ── VERSION HISTORY ───────────────────────────────────────────────────── -->
   <div class="section-divider">Version History</div>
 
+  <!-- ── v0.5 ───────────────────────────────────────────────────────────────── -->
+  <span class="section-anchor" id="version-v05"></span>
+  <h2>v0.5 — UX polish &amp; source transparency <span class="badge badge-green" style="font-size:12px;vertical-align:middle">shipped</span></h2>
+
+  <p>
+    A focused UX release on top of v0.3 — no data changes, no stack changes. The goal was to make
+    the existing data more legible and the interface more discoverable.
+  </p>
+
+  <h3>What changed from v0.3</h3>
+  <table>
+    <thead><tr><th>Area</th><th>Before</th><th>v0.5</th></tr></thead>
+    <tbody>
+      <tr>
+        <td>Horizontal space</td>
+        <td>LineUp clipped at viewport width; aggregate group column often hidden</td>
+        <td><code>#app</code> scrolls horizontally; <code>min-width: 640px</code> on the table prevents collapse</td>
+      </tr>
+      <tr>
+        <td>Aggregate column</td>
+        <td>Default narrow width; arrow to collapse/expand groups not discoverable</td>
+        <td>Column widened to 140 px; explicit <strong>Collapse regions</strong> / <strong>Expand regions</strong> toggle button in the header</td>
+      </tr>
+      <tr>
+        <td>Docs link</td>
+        <td>No link to documentation from the explorer</td>
+        <td><strong>About the index ↗</strong> button in the top bar, always visible</td>
+      </tr>
+      <tr>
+        <td>Interaction hint</td>
+        <td>No affordance explaining how region rows work</td>
+        <td>Slim hint bar below the header: "Click a region row to expand / collapse · Click a column header to re-sort"</td>
+      </tr>
+      <tr>
+        <td>Pillar level</td>
+        <td>No signal distinguishing language-level vs country-level pillars</td>
+        <td>Pillar buttons grouped in mode-bar under <strong>language-level</strong> and <strong>country-level</strong> section headers</td>
+      </tr>
+      <tr>
+        <td>Source transparency</td>
+        <td>Sub-indicator sources only visible in the row side panel</td>
+        <td>Dismissible <strong>pillar info card</strong> appears above the table when entering drill-down mode: lists every sub-indicator with source, update frequency, and normalization formula</td>
+      </tr>
+    </tbody>
+  </table>
+
   <!-- ── v0.3 ───────────────────────────────────────────────────────────────── -->
   <span class="section-anchor" id="version-v03"></span>
-  <h2>v0.3 — Precomputed data &amp; live weight adjustment <span class="badge badge-green" style="font-size:12px;vertical-align:middle">shipped</span></h2>
+  <h2>v0.3 — Precomputed data &amp; live weight adjustment <span class="badge badge-blue" style="font-size:12px;vertical-align:middle">superseded</span></h2>
 
   <p>
     Two improvements over v0.2: the contribution columns are baked into the data file rather than
