@@ -3,7 +3,7 @@
   <head lang="en">
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>LT4CR LineUp Index Explorer</title>
+    <title>LT4CR Risk Index Explorer</title>
     <link href="https://unpkg.com/lineupjs@4.16.0/build/LineUpJS.css" rel="stylesheet" />
     <style>
       :root {
@@ -14,10 +14,12 @@
         --text: #1f2933;
         --muted: #566372;
         --accent: #276ef1;
+        --radius: 6px;
       }
 
-      html,
-      body {
+      *, *::before, *::after { box-sizing: border-box; }
+
+      html, body {
         height: 100%;
         margin: 0;
       }
@@ -28,115 +30,659 @@
         display: flex;
         flex-direction: column;
         font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        font-size: 14px;
       }
 
+      /* ── Header ── */
       header {
         background: var(--panel);
         border-bottom: 1px solid var(--border);
-        padding: 14px 18px;
+        padding: 10px 16px 8px;
+        flex-shrink: 0;
       }
 
       .topline {
-        align-items: baseline;
+        align-items: center;
         display: flex;
         flex-wrap: wrap;
-        gap: 12px;
+        gap: 10px;
+        margin-bottom: 8px;
       }
 
       h1 {
-        font-size: 18px;
+        font-size: 16px;
         font-weight: 700;
-        letter-spacing: 0;
         margin: 0;
+        white-space: nowrap;
       }
 
       #status {
         color: var(--muted);
-        font-size: 13px;
-      }
-
-      .pillars {
-        display: grid;
-        gap: 8px;
-        grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
-        margin-top: 12px;
-      }
-
-      .pillar {
-        border: 1px solid var(--border);
-        border-radius: 8px;
-        background: #fbfcfe;
-        padding: 10px 12px;
-      }
-
-      .pillar strong {
-        display: block;
-        font-size: 13px;
-      }
-
-      .pillar span {
-        color: var(--muted);
-        display: block;
         font-size: 12px;
-        line-height: 1.35;
-        margin-top: 3px;
+        flex-shrink: 0;
       }
 
-      .note {
+      #status.error { color: #a12222; }
+
+      /* ── Mode bar ── */
+      #mode-bar {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        align-items: center;
+        margin-left: auto;
+      }
+
+      .mode-btn, .pillar-btn {
+        border: 1px solid var(--border);
+        background: var(--panel);
+        border-radius: var(--radius);
+        cursor: pointer;
+        font-size: 12px;
+        font-weight: 600;
+        padding: 4px 10px;
+        transition: background 0.12s, color 0.12s, border-color 0.12s;
+        white-space: nowrap;
         color: var(--muted);
-        font-size: 13px;
-        line-height: 1.4;
-        margin: 10px 0 0;
-        max-width: 980px;
+      }
+
+      .mode-btn:hover { background: #f0f2f5; color: var(--text); }
+
+      .mode-btn.active {
+        background: var(--accent);
+        border-color: var(--accent);
+        color: #fff;
+      }
+
+      .pillar-btn {
+        border-left: 3px solid var(--pillar-color, var(--border));
+      }
+
+      .pillar-btn:hover {
+        background: #f0f2f5;
+        color: var(--text);
+      }
+
+      .pillar-btn.active {
+        background: color-mix(in srgb, var(--pillar-color, #276ef1) 12%, #fff);
+        border-color: var(--pillar-color, var(--border));
+        color: var(--text);
+      }
+
+      /* ── App body ── */
+      #app {
+        display: flex;
+        flex: 1 1 auto;
+        min-height: 0;
+        overflow: hidden;
       }
 
       #lineup {
         background: var(--panel);
         flex: 1 1 auto;
-        min-height: 0;
+        min-width: 0;
+        overflow: hidden;
       }
 
-      .error {
-        color: #a12222;
+      /* ── Side panel ── */
+      #side-panel {
+        background: var(--panel);
+        border-left: 1px solid var(--border);
+        display: flex;
+        flex-direction: column;
+        min-width: 0;
+        overflow: hidden;
+        transition: width 0.18s ease, min-width 0.18s ease;
+        width: 0;
+      }
+
+      #side-panel.open {
+        min-width: 400px;
+        overflow-y: auto;
+        width: 400px;
+      }
+
+      .panel-inner {
+        min-width: 400px;
+        padding: 0;
+      }
+
+      .panel-top {
+        background: #f7f8fa;
+        border-bottom: 1px solid var(--border);
+        padding: 14px 16px 12px;
+        position: relative;
+      }
+
+      .panel-lang {
+        display: block;
+        font-size: 16px;
+        font-weight: 700;
+        margin-bottom: 2px;
+      }
+
+      .panel-country {
+        color: var(--muted);
+        font-size: 13px;
+      }
+
+      .panel-meta {
+        color: var(--muted);
+        font-size: 12px;
+        margin-top: 4px;
+      }
+
+      .panel-score-row {
+        align-items: baseline;
+        display: flex;
+        font-size: 13px;
+        gap: 6px;
+        justify-content: space-between;
+        margin-top: 8px;
+      }
+
+      .panel-score-row strong {
+        font-size: 22px;
+        font-weight: 700;
+        color: var(--text);
+      }
+
+      .close-btn {
+        background: none;
+        border: none;
+        color: var(--muted);
+        cursor: pointer;
+        font-size: 20px;
+        line-height: 1;
+        padding: 2px 4px;
+        position: absolute;
+        right: 10px;
+        top: 10px;
+      }
+
+      .close-btn:hover { color: var(--text); }
+
+      /* ── Pillar sections in side panel ── */
+      .pillar-section {
+        border-bottom: 1px solid var(--border);
+        padding: 10px 16px 12px;
+      }
+
+      .pillar-head {
+        align-items: center;
+        display: flex;
+        gap: 6px;
+        margin-bottom: 8px;
+      }
+
+      .pillar-dot {
+        border-radius: 50%;
+        flex-shrink: 0;
+        height: 10px;
+        width: 10px;
+      }
+
+      .pillar-name {
+        flex: 1;
+        font-size: 13px;
+        font-weight: 700;
+      }
+
+      .level-badge {
+        border-radius: 10px;
+        font-size: 10px;
+        font-weight: 700;
+        padding: 2px 7px;
+      }
+
+      .level-badge.country { background: #d6eaf8; color: #1a5276; }
+      .level-badge.language { background: #d5f5e3; color: #1e8449; }
+
+      .pillar-score {
+        font-family: "SF Mono", "Fira Code", monospace;
+        font-size: 14px;
+        font-weight: 700;
+        margin-left: 4px;
+      }
+
+      /* ── Sub-indicator table ── */
+      .sub-table {
+        border-collapse: collapse;
+        font-size: 12px;
+        width: 100%;
+      }
+
+      .sub-table td, .sub-table th {
+        padding: 3px 4px;
+        vertical-align: top;
+      }
+
+      .sub-header-row th {
+        color: var(--muted);
+        font-size: 10px;
+        font-weight: 500;
+        letter-spacing: 0.03em;
+        text-transform: uppercase;
+        border-bottom: 1px solid #e8e8e8;
+        padding-bottom: 4px;
+      }
+
+      .sub-label {
+        color: var(--text);
+        font-weight: 600;
+        width: 30%;
+      }
+
+      .sub-raw {
+        color: var(--muted);
+        font-family: "SF Mono", "Fira Code", monospace;
+        text-align: right;
+        white-space: nowrap;
+        width: 14%;
+      }
+
+      .sub-arrow {
+        color: #bbb;
+        text-align: center;
+        width: 4%;
+      }
+
+      .sub-norm {
+        font-family: "SF Mono", "Fira Code", monospace;
+        font-weight: 600;
+        text-align: right;
+        white-space: nowrap;
+        width: 10%;
+      }
+
+      .sub-contrib {
+        color: var(--accent);
+        font-family: "SF Mono", "Fira Code", monospace;
+        font-weight: 700;
+        text-align: right;
+        white-space: nowrap;
+        width: 10%;
+      }
+
+      .sub-meta {
+        color: var(--muted);
+        font-size: 11px;
+        padding-left: 8px;
+        line-height: 1.4;
+      }
+
+      .formula {
+        background: #f0f0f0;
+        border-radius: 3px;
+        display: inline-block;
+        font-family: "SF Mono", "Fira Code", monospace;
+        font-size: 10px;
+        margin-bottom: 2px;
+        padding: 1px 4px;
+      }
+
+      .source-link {
+        color: var(--accent);
+        display: block;
+        font-size: 11px;
+        text-decoration: none;
+      }
+
+      .source-link:hover { text-decoration: underline; }
+
+      .freq {
+        color: #999;
+        display: block;
+        font-size: 10px;
+      }
+
+      .missing { color: #999; font-style: italic; }
+
+      /* ── LineUp overrides ── */
+      .lu-col-header,
+      .lu-col-header .lu-label,
+      .lu-header-cell .lu-label,
+      .lu-header .lu-label {
+        font-size: clamp(11px, 0.85vw, 15px) !important;
+        font-weight: 600 !important;
+      }
+
+
+      tr.null-row td { opacity: 0.6; }
+
+      tr.null-note td {
+        color: #b7770d;
+        background: #fef9e7;
+        border-radius: 3px;
+        font-size: 11px;
+        padding: 2px 6px 4px;
       }
     </style>
   </head>
   <body>
     <header>
       <div class="topline">
-        <h1>LT4CR LineUp Index Explorer</h1>
-        <span id="status">Loading Final_Index.csv</span>
-      </div>
-      <p class="note">
-        This prototype keeps the full LineUp ranking available, but frames the index through its five
-        pillars first. Use the ranking to sort, group, filter, and inspect language-country pairs.
-      </p>
-      <div class="pillars" aria-label="Index pillars">
-        <div class="pillar">
-          <strong>Linguistic Indicators</strong>
-          <span>Speaker scale, diversity, status, and related language access context.</span>
-        </div>
-        <div class="pillar">
-          <strong>Crisis Risk Indicators</strong>
-          <span>Active risks, hazard drivers, and severity signals that raise priority.</span>
-        </div>
-        <div class="pillar">
-          <strong>Communications and Technology</strong>
-          <span>Digital support, app accessibility, ICT capacity, and media conditions.</span>
-        </div>
-        <div class="pillar">
-          <strong>Language Technology</strong>
-          <span>Training data, validated hours, articles, users, datasets, and models.</span>
-        </div>
-        <div class="pillar">
-          <strong>Social and Economic</strong>
-          <span>Human development, education, literacy, and economic constraints.</span>
+        <h1>LT4CR Risk Index Explorer</h1>
+        <span id="status">Loading…</span>
+        <div id="mode-bar">
+          <button id="btn-overview" class="mode-btn active">Overview mode</button>
         </div>
       </div>
     </header>
-    <main id="lineup"></main>
+
+    <div id="app">
+      <main id="lineup"></main>
+      <aside id="side-panel" aria-label="Language detail">
+        <div id="panel-inner" class="panel-inner"></div>
+      </aside>
+    </div>
+
     <script src="https://unpkg.com/lineupjs@4.16.0/build/LineUpJS.js"></script>
     <script>
+      // ── Column config ────────────────────────────────────────────────────────
+
+      const CONTEXT_COLS = ["language_name", "location_name"];
+      const WEIGHTED_COL = "weighted_index";
+
+      const PILLARS = [
+        {
+          key: "linguistic",
+          label: "Linguistic",
+          fullLabel: "Linguistic Indicators",
+          normCol: "Linguistic_Indicators_norm",
+          level: "language",
+          color: "#3498db",
+          subCols: [
+            {
+              col: "total_speakers_norm",
+              label: "Total speakers",
+              rawCol: "total_speakers",
+              formula: "(x−min)/(max−min)",
+              source: "IPUMS International / UNFPA LUDP",
+              url: "https://international.ipums.org",
+              freq: "census cycles (~10 yrs)",
+            },
+            {
+              col: "Linguistic_Diversity_Index_2017_norm",
+              label: "Linguistic Diversity Index",
+              rawCol: "Linguistic_Diversity_Index_2017",
+              formula: "direct (UNESCO 0–1 scale)",
+              source: "UNESCO 2017",
+              url: "https://en.wikipedia.org/wiki/List_of_countries_by_linguistic_diversity_index",
+              freq: "~every 5 years",
+            },
+          ],
+        },
+        {
+          key: "crisis",
+          label: "Crisis Risk",
+          fullLabel: "Crisis Risk Indicators",
+          normCol: "Crisis_Risk_Indicators_norm",
+          level: "country",
+          color: "#e74c3c",
+          subCols: [
+            {
+              col: "INFORM Severity Index_norm",
+              label: "INFORM Severity",
+              rawCol: "INFORM Severity Index",
+              formula: "(x−min)/(max−min)",
+              source: "INFORM / ReliefWeb",
+              url: "https://www.inform-index.org",
+              freq: "monthly",
+            },
+            {
+              col: "Active_Risks_Count_norm",
+              label: "Active risks count",
+              rawCol: "Active_Risks_Count",
+              formula: "(x−min)/(max−min)",
+              source: "ACAPS Risk List",
+              url: "https://www.acaps.org/en/thematics/risk-list",
+              freq: "weekly",
+            },
+            {
+              col: "drivers_count_norm",
+              label: "Crisis driver types",
+              rawCol: "drivers_count",
+              formula: "count → (x−min)/(max−min)",
+              source: "ACAPS Risk List",
+              url: "https://www.acaps.org/en/thematics/risk-list",
+              freq: "weekly",
+            },
+          ],
+        },
+        {
+          key: "comms",
+          label: "Comms & Tech",
+          fullLabel: "Communications & Technology",
+          normCol: "Communications_and_Technology_Indicators_norm",
+          level: "country",
+          color: "#9b59b6",
+          subCols: [
+            {
+              col: "MCI_Index_inv_norm",
+              label: "Meaningful Connectivity",
+              rawCol: "MCI_Index",
+              formula: "1 − (x / 100)",
+              source: "GSMA / A4AI",
+              url: "https://www.mobileconnectivityindex.com",
+              freq: "annual",
+            },
+            {
+              col: "Digital_Language_Support_inv_norm",
+              label: "Digital Language Support",
+              rawCol: "Digital_Language_Support",
+              formula: "1 − (x / 100)",
+              source: "GSMA / A4AI",
+              url: "https://www.mobileconnectivityindex.com",
+              freq: "annual",
+            },
+            {
+              col: "Language_accessibility_of_top_ranked_apps_inv_norm",
+              label: "App language accessibility",
+              rawCol: "Language_accessibility_of_top_ranked_apps",
+              formula: "1 − (x / 100)",
+              source: "GSMA / A4AI",
+              url: "https://www.mobileconnectivityindex.com",
+              freq: "annual",
+            },
+            {
+              col: "ICT_Development_Index_inv_norm",
+              label: "ICT Development Index",
+              rawCol: "ICT_Development_Index",
+              formula: "1 − (x / 100)",
+              source: "ITU",
+              url: "https://www.itu.int/en/ITU-D/Statistics/Pages/IDI/default.aspx",
+              freq: "annual",
+            },
+          ],
+        },
+        {
+          key: "langtech",
+          label: "Language Tech",
+          fullLabel: "Language Technology",
+          normCol: "Language_Technology_Indicators_norm",
+          level: "language",
+          color: "#1abc9c",
+          subCols: [
+            {
+              col: "Recorded Hours_inv_norm",
+              label: "Recorded hours",
+              rawCol: "Recorded Hours",
+              formula: "1 − (x−min)/(max−min)",
+              source: "Mozilla Common Voice",
+              url: "https://commonvoice.mozilla.org/en/languages",
+              freq: "snapshot",
+            },
+            {
+              col: "Validated Hours_inv_norm",
+              label: "Validated hours",
+              rawCol: "Validated Hours",
+              formula: "1 − (x−min)/(max−min)",
+              source: "Mozilla Common Voice",
+              url: "https://commonvoice.mozilla.org/en/languages",
+              freq: "snapshot",
+            },
+            {
+              col: "Articles_inv_norm",
+              label: "Wikipedia articles",
+              rawCol: "Articles",
+              formula: "1 − (x−min)/(max−min)",
+              source: "Wikimedia Meta",
+              url: "https://meta.wikimedia.org/wiki/List_of_Wikipedias",
+              freq: "snapshot",
+            },
+            {
+              col: "active_users_inv_norm",
+              label: "Wikipedia active editors",
+              rawCol: "active_users",
+              formula: "1 − (x−min)/(max−min)",
+              source: "Wikimedia Meta",
+              url: "https://meta.wikimedia.org/wiki/List_of_Wikipedias",
+              freq: "snapshot",
+            },
+            {
+              col: "Datasets_inv_norm",
+              label: "HuggingFace datasets",
+              rawCol: "Datasets",
+              formula: "1 − (x−min)/(max−min)",
+              source: "Hugging Face Hub",
+              url: "https://huggingface.co/datasets",
+              freq: "snapshot",
+            },
+            {
+              col: "Models_inv_norm",
+              label: "HuggingFace models",
+              rawCol: "Models",
+              formula: "1 − (x−min)/(max−min)",
+              source: "Hugging Face Hub",
+              url: "https://huggingface.co/models",
+              freq: "snapshot",
+            },
+            {
+              col: "appear_google_inv_norm",
+              label: "Google Translate support",
+              rawCol: "appear_google",
+              formula: "1 − x  (binary)",
+              source: "Google Cloud Translate",
+              url: "https://cloud.google.com/translate/docs/languages",
+              freq: "as added",
+            },
+          ],
+        },
+        {
+          key: "soceco",
+          label: "Social & Econ",
+          fullLabel: "Social & Economic",
+          normCol: "Social_and_Economic_Indicators_norm",
+          level: "country",
+          color: "#f39c12",
+          subCols: [
+            {
+              col: "GDP_2015_inv_norm",
+              label: "GDP per capita (2015 USD)",
+              rawCol: "GDP_2015",
+              formula: "1 − (x−min)/(max−min)",
+              source: "World Bank",
+              url: "https://data.worldbank.org/indicator/NY.GDP.PCAP.CD",
+              freq: "annual (2015 vintage)",
+            },
+            {
+              col: "IHDI_inv_norm",
+              label: "Inequality-adj. HDI",
+              rawCol: "IHDI",
+              formula: "1 − x",
+              source: "UNDP / Our World in Data",
+              url: "https://ourworldindata.org/human-development-index",
+              freq: "annual (most recent)",
+            },
+            {
+              col: "Education_Index_Value_inv_norm",
+              label: "Education Index",
+              rawCol: "Education_Index_Value",
+              formula: "1 − x",
+              source: "UNDP HDR",
+              url: "https://hdr.undp.org/data-center/documentation-and-downloads",
+              freq: "annual",
+            },
+            {
+              col: "Literacy_Rate_inv_norm",
+              label: "Literacy rate",
+              rawCol: "Literacy_Rate",
+              formula: "1 − (x / 100)",
+              source: "UNESCO / Our World in Data",
+              url: "https://ourworldindata.org/literacy",
+              freq: "annual (most recent)",
+            },
+          ],
+        },
+      ];
+
+      // ── Column display metadata (label + default width) ─────────────────────
+
+      const COL_META = {
+        Region:          { label: "",               width: 0   },
+        language_name:   { label: "Language",      width: 170 },
+        location_name:   { label: "Country",       width: 130 },
+        weighted_index:  { label: "Score", width: 120, color: "#2c3e50" },
+
+        // Pillar columns — each pillar's color applied to its bar
+        Linguistic_Indicators_norm:                        { label: "Linguistic",    width: 120, color: "#3498db" },
+        Crisis_Risk_Indicators_norm:                       { label: "Crisis Risk",   width: 120, color: "#e74c3c" },
+        Communications_and_Technology_Indicators_norm:     { label: "Comms & Tech",  width: 120, color: "#9b59b6" },
+        Language_Technology_Indicators_norm:               { label: "Language Tech", width: 145, color: "#1abc9c" },
+        Social_and_Economic_Indicators_norm:               { label: "Social & Econ", width: 120, color: "#f39c12" },
+
+        // Linguistic sub-indicators
+        total_speakers_norm:                               { label: "Total Speakers",  width: 115, color: "#3498db" },
+        Linguistic_Diversity_Index_2017_norm:              { label: "Diversity Index", width: 115, color: "#3498db" },
+
+        // Crisis Risk sub-indicators
+        "INFORM Severity Index_norm":                      { label: "INFORM Severity", width: 120, color: "#e74c3c" },
+        Active_Risks_Count_norm:                           { label: "Active Risks",    width: 110, color: "#e74c3c" },
+        drivers_count_norm:                                { label: "Driver Types",    width: 110, color: "#e74c3c" },
+
+        // Comms & Tech sub-indicators
+        MCI_Index_inv_norm:                                { label: "MCI",             width: 110, color: "#9b59b6" },
+        Digital_Language_Support_inv_norm:                 { label: "Digital Lang.",   width: 110, color: "#9b59b6" },
+        Language_accessibility_of_top_ranked_apps_inv_norm:{ label: "App Access.",     width: 110, color: "#9b59b6" },
+        ICT_Development_Index_inv_norm:                    { label: "ICT Index",       width: 110, color: "#9b59b6" },
+
+        // Language Tech sub-indicators
+        "Recorded Hours_inv_norm":                         { label: "Recorded Hrs",    width: 110, color: "#1abc9c" },
+        "Validated Hours_inv_norm":                        { label: "Validated Hrs",   width: 110, color: "#1abc9c" },
+        Articles_inv_norm:                                 { label: "WP Articles",     width: 110, color: "#1abc9c" },
+        active_users_inv_norm:                             { label: "WP Editors",      width: 110, color: "#1abc9c" },
+        Datasets_inv_norm:                                 { label: "HF Datasets",     width: 110, color: "#1abc9c" },
+        Models_inv_norm:                                   { label: "HF Models",       width: 110, color: "#1abc9c" },
+        appear_google_inv_norm:                            { label: "Google Translate", width: 120, color: "#1abc9c" },
+
+        // Social & Econ sub-indicators
+        GDP_2015_inv_norm:                                 { label: "GDP (2015)",      width: 110, color: "#f39c12" },
+        IHDI_inv_norm:                                     { label: "IHDI",            width: 110, color: "#f39c12" },
+        Education_Index_Value_inv_norm:                    { label: "Education Idx",   width: 110, color: "#f39c12" },
+        Literacy_Rate_inv_norm:                            { label: "Literacy Rate",   width: 110, color: "#f39c12" },
+      };
+
+      // ── Responsive scale ─────────────────────────────────────────────────────
+
+      function scale() {
+        // 1.0 at 1400px, grows to 1.5 at 2100px, shrinks to 0.85 below 1200px
+        return Math.max(0.85, Math.min(1.5, window.innerWidth / 1400));
+      }
+
+      function px(base) {
+        return Math.round(base * scale());
+      }
+
+      // ── State ────────────────────────────────────────────────────────────────
+
+      let allRecords = null;
+      let allDescs = null;
+      let currentMode = "overview";
+      let currentProvider = null;
+
+      // ── CSV parser (unchanged from v0.1) ─────────────────────────────────────
+
       function parseCsv(text) {
         const rows = [];
         let row = [];
@@ -188,9 +734,7 @@
       }
 
       function isNumberValue(value) {
-        if (value === "" || value === "NA" || value === "NaN") {
-          return true;
-        }
+        if (value === "" || value === "NA" || value === "NaN") return true;
         return Number.isFinite(Number(value));
       }
 
@@ -202,12 +746,15 @@
           const numeric = values.every(isNumberValue);
 
           if (numeric) {
-            const numbers = values.filter((value) => value !== "" && value !== "NA" && value !== "NaN").map(Number);
+            const numbers = values
+              .filter((v) => v !== "" && v !== "NA" && v !== "NaN")
+              .map(Number);
             const min = Math.min(...numbers);
             const max = Math.max(...numbers);
             converted.forEach((record) => {
-              const value = record[column];
-              record[column] = value === "" || value === "NA" || value === "NaN" ? null : Number(value);
+              const v = record[column];
+              record[column] =
+                v === "" || v === "NA" || v === "NaN" ? null : Number(v);
             });
             return { column, type: "number", domain: [min, max] };
           }
@@ -223,28 +770,296 @@
         return { converted, descriptions };
       }
 
-      function buildLineUp(records) {
-        const { converted, descriptions } = prepareColumns(records);
-        const provider = new LineUpJS.LocalDataProvider(converted, descriptions);
-        provider.deriveDefault();
+      // ── Pillar contribution columns ──────────────────────────────────────────
+      //
+      // In the pipeline: sub-indicator norms are SUMMED into Pillar_Indicators,
+      // then min-maxed to Pillar_Indicators_norm.  The raw _inv_norm values therefore
+      // do NOT directly sum to the pillar score — only the intermediate sum does.
+      //
+      // To make the drill-down bars visually add up to the pillar score we compute
+      // per-row contribution weights:
+      //   contrib_i = (sub_inv_norm_i / sum_of_sub_inv_norms) × pillar_norm
+      // So: Σ contrib_i = pillar_norm  ✓
+      //
+      // These columns (key: `${sub.col}__contrib`) are added to allRecords and allDescs
+      // after the CSV is loaded.  The `__contrib` suffix is stripped when looking up
+      // COL_META so labels and colors are inherited from the underlying _norm column.
 
-        const ranking = provider.getLastRanking();
-        const findColumn = (column) => ranking.find((candidate) => candidate.desc && candidate.desc.column === column);
-        const weightedIndex = findColumn("weighted_index");
-        const region = findColumn("Region");
-
-        if (weightedIndex) {
-          ranking.sortBy(weightedIndex, false);
-        }
-
-        if (region) {
-          ranking.groupBy(region);
-        }
-
-        const lineup = new LineUpJS.Taggle(document.querySelector("#lineup"), provider);
-        lineup.update();
+      function computePillarContributions(records) {
+        PILLARS.forEach((pillar) => {
+          records.forEach((rec) => {
+            const pillarScore = rec[pillar.normCol] ?? 0;
+            const subVals = pillar.subCols.map((s) => rec[s.col] ?? 0);
+            const subSum = subVals.reduce((a, b) => a + b, 0);
+            pillar.subCols.forEach((sub, i) => {
+              rec[`${sub.col}__contrib`] =
+                subSum > 0 ? (subVals[i] / subSum) * pillarScore : 0;
+            });
+          });
+        });
       }
 
+      function addContribDescs(records, descriptions) {
+        const extras = [];
+        PILLARS.forEach((pillar) => {
+          pillar.subCols.forEach((sub) => {
+            const base = descriptions.find((d) => d.column === sub.col);
+            if (!base) return;
+            const vals = records
+              .map((r) => r[`${sub.col}__contrib`])
+              .filter((v) => v !== null && !isNaN(v));
+            const maxVal = vals.length ? Math.max(...vals) : 0.2;
+            extras.push({
+              ...base,
+              column: `${sub.col}__contrib`,
+              domain: [0, maxVal || 0.01],
+            });
+          });
+        });
+        return [...descriptions, ...extras];
+      }
+
+      // ── LineUp management ────────────────────────────────────────────────────
+
+      function getColsForMode(mode) {
+        if (mode === "overview") {
+          return [
+            ...CONTEXT_COLS,
+            WEIGHTED_COL,
+            ...PILLARS.map((p) => p.normCol),
+          ];
+        }
+        const pillar = PILLARS.find((p) => p.key === mode);
+        if (!pillar) return getColsForMode("overview");
+        return [
+          ...CONTEXT_COLS,
+          WEIGHTED_COL,
+          pillar.normCol,
+          ...pillar.subCols.map((s) => `${s.col}__contrib`),
+        ];
+      }
+
+      function buildLineUp(mode) {
+        const colKeys = getColsForMode(mode);
+
+        // Region drives groupBy — kept in ranking but width-0 so it's not a visible column
+        const descKeys = colKeys.includes("Region")
+          ? colKeys
+          : ["Region", ...colKeys];
+
+        const orderedDescs = descKeys
+          .map((key) => {
+            const base = allDescs.find((d) => d.column === key);
+            if (!base) return null;
+            // __contrib cols inherit label/width/color from the underlying _norm col
+            const metaKey = key.endsWith("__contrib")
+              ? key.slice(0, -9)
+              : key;
+            const meta = COL_META[metaKey] || {};
+            return {
+              ...base,
+              ...(meta.label && { label: meta.label }),
+              ...(meta.width && { width: px(meta.width) }),
+              ...(meta.color && { color: meta.color }),
+            };
+          })
+          .filter(Boolean);
+
+        const container = document.querySelector("#lineup");
+        container.innerHTML = "";
+
+        const provider = new LineUpJS.LocalDataProvider(
+          allRecords,
+          orderedDescs
+        );
+        provider.deriveDefault();
+        currentProvider = provider;
+
+        const ranking = provider.getLastRanking();
+        const byCol = (key) =>
+          ranking.find((c) => c.desc && c.desc.column === key);
+
+        const wCol = byCol(WEIGHTED_COL);
+        if (wCol) ranking.sortBy(wCol, false);
+
+        const regionCol = byCol("Region");
+        if (regionCol) ranking.groupBy(regionCol);
+
+        const lineup = new LineUpJS.Taggle(container, provider, {
+          rowHeight: px(24),
+          groupHeight: px(36),
+        });
+        lineup.update();
+
+        // Row selection → side panel
+        provider.on("selectionChanged", (indices) => {
+          if (indices && indices.length > 0) {
+            const rec = allRecords[indices[0]];
+            if (rec) showSidePanel(rec);
+          } else {
+            hideSidePanel();
+          }
+        });
+      }
+
+      // ── Mode switching ───────────────────────────────────────────────────────
+
+      function setMode(mode) {
+        currentMode = mode;
+        hideSidePanel();
+        buildLineUp(mode);
+
+        const overviewBtn = document.querySelector("#btn-overview");
+        overviewBtn.classList.toggle("active", mode === "overview");
+
+        document.querySelectorAll(".pillar-btn").forEach((btn) => {
+          btn.classList.toggle("active", btn.dataset.pillar === mode);
+        });
+      }
+
+      // ── Side panel ───────────────────────────────────────────────────────────
+
+      function showSidePanel(record) {
+        const panel = document.querySelector("#side-panel");
+        document.querySelector("#panel-inner").innerHTML =
+          buildPanelHTML(record);
+        panel.classList.add("open");
+      }
+
+      function hideSidePanel() {
+        document.querySelector("#side-panel").classList.remove("open");
+      }
+
+      function fmt(val, dec = 3) {
+        if (
+          val === null ||
+          val === undefined ||
+          val === "" ||
+          (typeof val === "number" && isNaN(val))
+        )
+          return null;
+        if (typeof val === "number") return val.toFixed(dec);
+        return String(val);
+      }
+
+      function buildPanelHTML(record) {
+        const score = fmt(record[WEIGHTED_COL]) ?? "—";
+
+        const pillarSections = PILLARS.map((pillar) => {
+          const pillarScore = fmt(record[pillar.normCol]) ?? "—";
+          const levelClass = pillar.level === "country" ? "country" : "language";
+          const levelText =
+            pillar.level === "country" ? "country-level" : "language-level";
+
+          const subRows = pillar.subCols
+            .map((sub) => {
+              const rawVal = record[sub.rawCol];
+              const normVal = record[sub.col];
+              const contribVal = record[`${sub.col}__contrib`];
+              const isNull =
+                rawVal === null ||
+                rawVal === undefined ||
+                rawVal === "" ||
+                (typeof rawVal === "number" && isNaN(rawVal));
+
+              const rawDisplay = isNull
+                ? '<span class="missing">no data</span>'
+                : fmt(rawVal, 2) ?? "—";
+              const normDisplay = fmt(normVal) ?? "—";
+              const contribDisplay =
+                contribVal !== undefined ? fmt(contribVal) : "—";
+
+              return `
+                <tr class="${isNull ? "null-row" : ""}">
+                  <td class="sub-label">${sub.label}</td>
+                  <td class="sub-raw">${rawDisplay}</td>
+                  <td class="sub-arrow">→</td>
+                  <td class="sub-norm">${normDisplay}</td>
+                  <td class="sub-arrow">→</td>
+                  <td class="sub-contrib" title="contribution to pillar score">${contribDisplay}</td>
+                  <td class="sub-meta">
+                    <span class="formula">${sub.formula}</span>
+                    <a class="source-link" href="${sub.url}" target="_blank" rel="noopener">${sub.source}</a>
+                    <span class="freq">${sub.freq}</span>
+                  </td>
+                </tr>
+                ${isNull ? `<tr class="null-note"><td colspan="7">⚠ No source data — filled as 0 before aggregation</td></tr>` : ""}
+              `;
+            })
+            .join("");
+
+          return `
+            <div class="pillar-section">
+              <div class="pillar-head">
+                <span class="pillar-dot" style="background:${pillar.color}"></span>
+                <span class="pillar-name">${pillar.fullLabel}</span>
+                <span class="level-badge ${levelClass}">${levelText}</span>
+                <span class="pillar-score">${pillarScore}</span>
+              </div>
+              <table class="sub-table">
+                <thead>
+                  <tr class="sub-header-row">
+                    <th></th>
+                    <th class="sub-raw">raw</th>
+                    <th></th>
+                    <th class="sub-norm">norm</th>
+                    <th></th>
+                    <th class="sub-contrib">contrib</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody>${subRows}</tbody>
+              </table>
+            </div>
+          `;
+        }).join("");
+
+        return `
+          <div class="panel-top">
+            <button class="close-btn" onclick="hideSidePanel()" title="Close">×</button>
+            <span class="panel-lang">${record.language_name ?? "—"}</span>
+            <span class="panel-country">${record.location_name ?? "—"}</span>
+            <div class="panel-meta">
+              ${record.Region ?? ""} · <em>${record.status ?? ""}</em>
+            </div>
+            <div class="panel-score-row">
+              <span>Composite vulnerability score</span>
+              <strong>${score}</strong>
+            </div>
+          </div>
+          ${pillarSections}
+        `;
+      }
+
+      // ── Init ─────────────────────────────────────────────────────────────────
+
+      // Inject pillar drill-down buttons
+      const modeBar = document.querySelector("#mode-bar");
+      PILLARS.forEach((p) => {
+        const btn = document.createElement("button");
+        btn.className = "pillar-btn";
+        btn.dataset.pillar = p.key;
+        btn.textContent = p.label;
+        btn.title = p.fullLabel;
+        btn.style.setProperty("--pillar-color", p.color);
+        btn.addEventListener("click", () => setMode(p.key));
+        modeBar.appendChild(btn);
+      });
+
+      document
+        .querySelector("#btn-overview")
+        .addEventListener("click", () => setMode("overview"));
+
+      // Rebuild on resize so scale() is re-evaluated
+      let resizeTimer = null;
+      window.addEventListener("resize", () => {
+        clearTimeout(resizeTimer);
+        resizeTimer = setTimeout(() => {
+          if (allRecords) setMode(currentMode);
+        }, 250);
+      });
+
+      // Load data
       (window.__BAKED_CSV__
         ? Promise.resolve(window.__BAKED_CSV__)
         : fetch("/data/Final_Index.csv").then((r) => {
@@ -254,7 +1069,11 @@
       )
         .then((text) => {
           const records = parseCsv(text);
-          buildLineUp(records);
+          const { converted, descriptions } = prepareColumns(records);
+          computePillarContributions(converted);
+          allRecords = converted;
+          allDescs = addContribDescs(converted, descriptions);
+          setMode("overview");
           document.querySelector("#status").textContent = `${records.length.toLocaleString()} rows`;
         })
         .catch((error) => {
