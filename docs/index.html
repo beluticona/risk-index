@@ -259,7 +259,8 @@
     <li><a href="#viz-f">F. Inferred weights</a></li>
 
     <li class="section">Version History</li>
-    <li><a href="#version-v052">v0.5.2 — current</a></li>
+    <li><a href="#version-v053">v0.5.3 — current</a></li>
+    <li><a href="#version-v052">v0.5.2 — weight tool</a></li>
     <li><a href="#version-v051">v0.5.1 — reliability panel</a></li>
     <li><a href="#version-v05">v0.5 — UX polish</a></li>
     <li><a href="#version-v03">v0.3 — precomputed data</a></li>
@@ -282,7 +283,7 @@
 
   <div class="callout callout-info">
     <strong>Where things stand:</strong>
-    The <strong>LineUp.js explorer (v0.5.2)</strong> is deployed on GitHub Pages and is the current
+    The <strong>LineUp.js explorer (v0.5.3)</strong> is deployed on GitHub Pages and is the current
     working tool. A <strong>Streamlit + Claude API app</strong> with maps, LLM narrative, and
     counterfactual analysis is planned next. This document covers both.
   </div>
@@ -319,8 +320,8 @@
   <h2>Quick start</h2>
 
   <h3>Access the deployed tool</h3>
-  <p>The v0.5.2 explorer is live on GitHub Pages. Open it in any modern browser:</p>
-  <div class="file-tree">https://beluticona.github.io/risk-index/v0.5.2/</div>
+  <p>The v0.5.3 explorer is live on GitHub Pages. Open it in any modern browser:</p>
+  <div class="file-tree">https://beluticona.github.io/risk-index/v0.5.3/</div>
 
   <h3>Run locally</h3>
   <p>The explorer works without any build step — <code>serve.py</code> converts the Excel file to CSV on the fly:</p>
@@ -353,7 +354,7 @@ python serve.py           <span class="note"># starts local server at http://127
   </div>
 
   <!-- ── Current Explorer ──────────────────────────────────────────────────── -->
-  <div class="section-divider">Current Explorer — v0.5.2 (shipped)</div>
+  <div class="section-divider">Current Explorer — v0.5.3 (shipped)</div>
 
   <span class="section-anchor" id="explorer-features"></span>
   <h2>How the explorer works</h2>
@@ -1605,8 +1606,64 @@ python-dotenv>=1.0</pre>
   <div class="section-divider">Version History</div>
 
   <!-- ── v0.5.2 ─────────────────────────────────────────────────────────────── -->
+  <!-- ── v0.5.3 ─────────────────────────────────────────────────────────────── -->
+  <span class="section-anchor" id="version-v053"></span>
+  <h2>v0.5.3 — Country-level grouping &amp; boxplots <span class="badge badge-green" style="font-size:12px;vertical-align:middle">shipped</span></h2>
+
+  <p>
+    Adds flexible group-by controls so users can aggregate and compare languages at the
+    country level — not just by continent — with the same boxplot visualisation the
+    aggregate column already provides per region.
+  </p>
+
+  <h3>What changed from v0.5.2</h3>
+  <table>
+    <thead><tr><th>Area</th><th>Before</th><th>v0.5.3</th></tr></thead>
+    <tbody>
+      <tr>
+        <td>Group-by toggle</td>
+        <td>Rows always grouped by Region (4 continental groups)</td>
+        <td>Three buttons in the mode-bar: <strong>Region</strong> (4 groups),
+          <strong>Country</strong> (48 groups), and <strong>Region › Country</strong>
+          (nested — expand a continent to see country sub-groups). "Collapse groups"
+          button works in all three modes.</td>
+      </tr>
+      <tr>
+        <td>Boxplots per country</td>
+        <td><code>location_name</code> was classified as <code>type: "string"</code>
+          (48 unique values, above the 40-value categorical threshold) so LineUp.js
+          could not render aggregate boxplots when grouped by country</td>
+        <td><code>location_name</code> is now forced to <code>type: "categorical"</code>
+          regardless of the threshold. Country groups show the same distribution boxplot
+          in the Aggregated Groups column as region groups do.</td>
+      </tr>
+      <tr>
+        <td>COL_META width/label fix</td>
+        <td><code>width: 0</code> and <code>label: ""</code> in COL_META were silently
+          ignored because <code>0</code> and <code>""</code> are falsy in JavaScript,
+          so the spread condition <code>meta.width &amp;&amp; …</code> never fired</td>
+        <td>Conditions changed to <code>meta.width !== undefined</code> and
+          <code>meta.label !== undefined</code> so zero-width and empty-label settings
+          are applied correctly.</td>
+      </tr>
+      <tr>
+        <td>Hint bar</td>
+        <td>"Click a <em>region</em> row to expand / collapse"</td>
+        <td>"Click a <em>group</em> row to expand / collapse" — accurate in all three
+          grouping modes.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="callout callout-tip">
+    <strong>Why some country boxplots look narrow:</strong> countries with few languages
+    (e.g. 1–3) produce short distributions. The boxplot is still correct — it just
+    reflects the real spread of scores for that country's languages.
+  </div>
+
+  <!-- ── v0.5.2 ─────────────────────────────────────────────────────────────── -->
   <span class="section-anchor" id="version-v052"></span>
-  <h2>v0.5.2 — Weight tool improvements <span class="badge badge-green" style="font-size:12px;vertical-align:middle">shipped</span></h2>
+  <h2>v0.5.2 — Weight tool improvements <span class="badge badge-blue" style="font-size:12px;vertical-align:middle">superseded</span></h2>
 
   <p>
     Two improvements to the pillar weight controls, making the current weighting more visible

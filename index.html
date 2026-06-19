@@ -879,7 +879,12 @@
         <span id="status">Loading…</span>
         <div id="mode-bar">
           <button id="btn-overview" class="mode-btn active">Overview mode</button>
-          <button id="btn-collapse" class="mode-btn" title="Collapse all regions into summary rows">Collapse regions</button>
+          <button id="btn-collapse" class="mode-btn" title="Collapse all groups into summary rows">Collapse groups</button>
+          <span class="mode-separator"></span>
+          <span class="pillar-group-label">Group by</span>
+          <button id="btn-group-region"  class="mode-btn active">Region</button>
+          <button id="btn-group-country" class="mode-btn">Country</button>
+          <button id="btn-group-nested"  class="mode-btn">Region › Country</button>
           <span class="mode-separator"></span>
           <div class="pillar-group" id="group-language">
             <span class="pillar-group-label">language-level</span>
@@ -898,7 +903,7 @@
         <button id="btn-reset-weights">Reset</button>
       </div>
       <div id="hint-bar">
-        <strong>Click a region row</strong> to expand / collapse its languages &nbsp;·&nbsp;
+        <strong>Click a group row</strong> to expand / collapse its languages &nbsp;·&nbsp;
         <strong>Click a column header</strong> to re-sort &nbsp;·&nbsp;
         country-level pillars share the same value for all languages in a country
       </div>
@@ -1267,6 +1272,7 @@
       let currentProvider = null;
       let coverageCache = {};
       const lockedWeights = new Set();
+      let groupMode = "region"; // "region" | "country"
 
       function computeCoverage(records) {
         const cache = {};
@@ -1546,7 +1552,9 @@
           }
 
           const categories = Array.from(new Set(values.filter(Boolean))).sort();
-          if (categories.length > 1 && categories.length <= 40) {
+          // Force location_name to categorical even though it has 48 values (> default
+          // threshold of 40) so LineUp.js renders boxplots on group rows when grouped by country.
+          if (categories.length > 1 && (categories.length <= 40 || column === "location_name")) {
             return { column, type: "categorical", categories };
           }
 
@@ -1583,10 +1591,8 @@
       function buildLineUp(mode) {
         const colKeys = getColsForMode(mode);
 
-        // Region drives groupBy — kept in ranking but width-0 so it's not a visible column
-        const descKeys = colKeys.includes("Region")
-          ? colKeys
-          : ["Region", ...colKeys];
+        // Region drives groupBy — kept in ranking but width-0 (invisible)
+        const descKeys = colKeys.includes("Region") ? colKeys : ["Region", ...colKeys];
 
         const orderedDescs = descKeys
           .map((key) => {
@@ -1599,8 +1605,8 @@
             const meta = COL_META[metaKey] || {};
             return {
               ...base,
-              ...(meta.label && { label: meta.label }),
-              ...(meta.width && { width: px(meta.width) }),
+              ...(meta.label !== undefined && { label: meta.label }),
+              ...(meta.width !== undefined && { width: px(meta.width) }),
               ...(meta.color && { color: meta.color }),
             };
           })
@@ -1623,8 +1629,16 @@
         const wCol = byCol(WEIGHTED_COL);
         if (wCol) ranking.sortBy(wCol, false);
 
-        const regionCol = byCol("Region");
-        if (regionCol) ranking.groupBy(regionCol);
+        if (groupMode === "nested") {
+          const regionCol  = byCol("Region");
+          const countryCol = byCol("location_name");
+          if (regionCol && countryCol) ranking.groupBy(regionCol, countryCol);
+        } else {
+          const groupCol = groupMode === "country"
+            ? byCol("location_name")
+            : byCol("Region");
+          if (groupCol) ranking.groupBy(groupCol);
+        }
 
         const aggCol = ranking.find((c) => c.desc && c.desc.type === "aggregate");
         if (aggCol) {
@@ -2036,9 +2050,49 @@
         const btn = document.getElementById("btn-collapse");
         if (!btn._aggCol) return;
         groupsCollapsed = !groupsCollapsed;
-        btn.textContent = groupsCollapsed ? "Expand regions" : "Collapse regions";
+        btn.textContent = groupsCollapsed ? "Expand groups" : "Collapse groups";
         btn.classList.toggle("active", groupsCollapsed);
         btn._aggCol.setCollapseAll(groupsCollapsed);
+      });
+
+      // Group-by toggle (Region / Country)
+      document.getElementById("btn-group-region").addEventListener("click", () => {
+        if (groupMode === "region") return;
+        groupMode = "region";
+        groupsCollapsed = false;
+        document.getElementById("btn-group-region").classList.add("active");
+        document.getElementById("btn-group-country").classList.remove("active");
+        document.getElementById("btn-group-nested").classList.remove("active");
+        const collapseBtn = document.getElementById("btn-collapse");
+        collapseBtn.textContent = "Collapse groups";
+        collapseBtn.classList.remove("active");
+        if (allRecords) setMode(currentMode);
+      });
+
+      document.getElementById("btn-group-country").addEventListener("click", () => {
+        if (groupMode === "country") return;
+        groupMode = "country";
+        groupsCollapsed = false;
+        document.getElementById("btn-group-country").classList.add("active");
+        document.getElementById("btn-group-region").classList.remove("active");
+        document.getElementById("btn-group-nested").classList.remove("active");
+        const collapseBtn = document.getElementById("btn-collapse");
+        collapseBtn.textContent = "Collapse groups";
+        collapseBtn.classList.remove("active");
+        if (allRecords) setMode(currentMode);
+      });
+
+      document.getElementById("btn-group-nested").addEventListener("click", () => {
+        if (groupMode === "nested") return;
+        groupMode = "nested";
+        groupsCollapsed = false;
+        document.getElementById("btn-group-nested").classList.add("active");
+        document.getElementById("btn-group-region").classList.remove("active");
+        document.getElementById("btn-group-country").classList.remove("active");
+        const collapseBtn = document.getElementById("btn-collapse");
+        collapseBtn.textContent = "Collapse groups";
+        collapseBtn.classList.remove("active");
+        if (allRecords) setMode(currentMode);
       });
 
       // Rebuild on resize so scale() is re-evaluated
