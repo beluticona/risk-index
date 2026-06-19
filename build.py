@@ -53,6 +53,12 @@ def main() -> None:
     dest.write_text(out, encoding="utf-8")
     print(f"Built → {dest}  ({dest.stat().st_size / 1024:.0f} KB)")
 
+    docs_src = HERE / "docs.html"
+    if docs_src.exists():
+        docs_dest = DIST / "docs.html"
+        docs_dest.write_text(docs_src.read_text(encoding="utf-8"), encoding="utf-8")
+        print(f"Copied → {docs_dest}  ({docs_dest.stat().st_size / 1024:.0f} KB)")
+
 
 if __name__ == "__main__":
     main()
