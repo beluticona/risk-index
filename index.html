@@ -560,6 +560,200 @@
         white-space: nowrap;
       }
 
+      .pinfo-cov {
+        white-space: nowrap;
+      }
+
+      .cov-wrap {
+        align-items: center;
+        display: flex;
+        gap: 6px;
+      }
+
+      .cov-track {
+        background: #e8e8e8;
+        border-radius: 3px;
+        flex-shrink: 0;
+        height: 5px;
+        overflow: hidden;
+        width: 52px;
+      }
+
+      .cov-fill {
+        border-radius: 3px;
+        height: 100%;
+        transition: width 0.2s;
+      }
+
+      .cov-fill.high   { background: #27ae60; }
+      .cov-fill.mid    { background: #f39c12; }
+      .cov-fill.low    { background: #e74c3c; }
+
+      .cov-pct {
+        color: var(--text);
+        font-size: 11px;
+        font-weight: 600;
+        min-width: 30px;
+      }
+
+      .cov-bias {
+        border-bottom: 1px dashed var(--border);
+        color: var(--muted);
+        cursor: help;
+        font-size: 10px;
+      }
+
+      /* ── Coverage panel ── */
+      #coverage-panel {
+        background: var(--panel);
+        border-bottom: 1px solid var(--border);
+        border-top: 3px solid #e6a817;
+        flex-shrink: 0;
+        max-height: 380px;
+        overflow-y: auto;
+        padding: 10px 16px 14px;
+      }
+
+      .covpanel-header {
+        align-items: center;
+        display: flex;
+        gap: 12px;
+        margin-bottom: 10px;
+        position: sticky;
+        top: 0;
+        background: var(--panel);
+        padding-bottom: 8px;
+        border-bottom: 1px solid var(--border);
+      }
+
+      .covpanel-title {
+        flex-shrink: 0;
+        font-size: 13px;
+        font-weight: 700;
+      }
+
+      .covpanel-summary {
+        display: flex;
+        flex: 1;
+        flex-wrap: wrap;
+        gap: 6px;
+      }
+
+      .covpanel-badge {
+        border-radius: 4px;
+        font-size: 11px;
+        font-weight: 600;
+        padding: 2px 8px;
+      }
+
+      .covpanel-badge.high { background: #eafaf1; color: #1e8449; }
+      .covpanel-badge.mid  { background: #fef9e7; color: #9a7000; }
+      .covpanel-badge.low  { background: #fdedec; color: #b03a2e; }
+
+      .covpanel-close {
+        background: none;
+        border: none;
+        color: var(--muted);
+        cursor: pointer;
+        flex-shrink: 0;
+        font-size: 18px;
+        line-height: 1;
+        padding: 0 2px;
+      }
+      .covpanel-close:hover { color: var(--text); }
+
+      .covpanel-table {
+        border-collapse: collapse;
+        font-size: 12px;
+        width: 100%;
+      }
+
+      .covpanel-table th {
+        border-bottom: 1px solid var(--border);
+        color: var(--muted);
+        font-size: 10px;
+        font-weight: 700;
+        letter-spacing: 0.05em;
+        padding: 6px 8px 4px;
+        text-align: left;
+        text-transform: uppercase;
+        white-space: nowrap;
+      }
+
+      .covpanel-table td {
+        border-bottom: 1px solid #f3f4f6;
+        padding: 5px 8px;
+        vertical-align: middle;
+      }
+
+      .covpanel-table tr:last-child td { border-bottom: none; }
+
+      .covpanel-section td {
+        background: #f7f8fa;
+        border-bottom: 1px solid var(--border);
+        font-size: 10px;
+        font-weight: 700;
+        letter-spacing: 0.06em;
+        padding: 5px 8px;
+        text-transform: uppercase;
+      }
+
+      .covpanel-section .section-dot {
+        border-radius: 50%;
+        display: inline-block;
+        height: 8px;
+        margin-right: 5px;
+        vertical-align: middle;
+        width: 8px;
+      }
+
+      .mini-cov {
+        align-items: center;
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+        min-width: 38px;
+      }
+
+      .mini-track {
+        background: #e8e8e8;
+        border-radius: 2px;
+        height: 4px;
+        overflow: hidden;
+        width: 38px;
+      }
+
+      .mini-fill {
+        border-radius: 2px;
+        height: 100%;
+      }
+
+      .mini-fill.high { background: #27ae60; }
+      .mini-fill.mid  { background: #f39c12; }
+      .mini-fill.low  { background: #e74c3c; }
+
+      .mini-pct {
+        color: var(--muted);
+        font-size: 10px;
+        text-align: center;
+      }
+
+      /* Coverage button */
+      .coverage-btn {
+        background: #fffbf0;
+        border: 1px solid #e6c84a;
+        border-radius: var(--radius);
+        color: #7a5800;
+        cursor: pointer;
+        flex-shrink: 0;
+        font-size: 12px;
+        font-weight: 600;
+        padding: 4px 10px;
+        white-space: nowrap;
+      }
+      .coverage-btn:hover  { background: #fff3cc; }
+      .coverage-btn.active { background: #fef3cd; border-color: #e6a817; }
+
       /* ── LineUp overrides ── */
       .lu-col-header,
       .lu-col-header .lu-label,
@@ -586,6 +780,7 @@
       <div class="topline">
         <h1>LT4CR Risk Index Explorer</h1>
         <a href="./docs/" class="docs-btn" target="_blank">About the index ↗</a>
+        <button id="btn-coverage" class="coverage-btn">Data reliability</button>
         <span id="status">Loading…</span>
         <div id="mode-bar">
           <button id="btn-overview" class="mode-btn active">Overview mode</button>
@@ -613,6 +808,29 @@
       </div>
     </header>
 
+    <div id="coverage-panel" hidden>
+      <div class="covpanel-header">
+        <strong class="covpanel-title">Data reliability</strong>
+        <div class="covpanel-summary" id="covpanel-summary"></div>
+        <button class="covpanel-close" onclick="toggleCoveragePanel(false)">×</button>
+      </div>
+      <table class="covpanel-table">
+        <thead>
+          <tr>
+            <th>Sub-indicator</th>
+            <th>Level</th>
+            <th>Overall coverage</th>
+            <th>Africa</th>
+            <th>Asia</th>
+            <th>N. America</th>
+            <th>S. America</th>
+            <th>Null bias</th>
+          </tr>
+        </thead>
+        <tbody id="covpanel-rows"></tbody>
+      </table>
+    </div>
+
     <div id="pillar-info" hidden>
       <div class="pinfo-header">
         <span class="pinfo-dot"></span>
@@ -628,6 +846,7 @@
               <th>Source</th>
               <th>Update frequency</th>
               <th>Normalization</th>
+              <th title="% of the 755 rows with non-null data for this field">Coverage</th>
             </tr>
           </thead>
           <tbody class="pinfo-rows"></tbody>
@@ -950,6 +1169,21 @@
       let allDescs = null;
       let currentMode = "overview";
       let currentProvider = null;
+      let coverageCache = {};
+
+      function computeCoverage(records) {
+        const cache = {};
+        PILLARS.forEach((p) => {
+          p.subCols.forEach((s) => {
+            const present = records.filter((r) => {
+              const v = r[s.rawCol];
+              return v !== null && v !== undefined && v !== "" && !Number.isNaN(+v);
+            }).length;
+            cache[s.rawCol] = present / records.length;
+          });
+        });
+        return cache;
+      }
 
       // Weights — integers 0-100, always sum to 100
       const currentWeights = Object.fromEntries(
@@ -1254,6 +1488,172 @@
         });
       }
 
+      // ── Coverage panel ───────────────────────────────────────────────────────
+
+      const REGIONS = ["Africa", "Asia", "North America", "South America"];
+      const REGION_SHORT = { "Africa": "Africa", "Asia": "Asia", "North America": "N. Am.", "South America": "S. Am." };
+      const DEFAULT_WEIGHTS = { linguistic: 0.20, crisis: 0.25, comms: 0.15, langtech: 0.25, soceco: 0.15 };
+      const TOTAL_COUNTRIES = 48;
+
+      function computeCoveragePanel(records) {
+        const n = records.length;
+
+        // Per-row reliability summary
+        let high = 0, mid = 0, low = 0;
+        records.forEach((rec) => {
+          let score = 0;
+          PILLARS.forEach((p) => {
+            const present = p.subCols.filter((s) => {
+              const v = rec[s.rawCol];
+              return v !== null && v !== undefined && v !== "" && !Number.isNaN(+v);
+            }).length;
+            score += (present / p.subCols.length) * DEFAULT_WEIGHTS[p.key];
+          });
+          if (score >= 0.90) high++;
+          else if (score >= 0.70) mid++;
+          else low++;
+        });
+
+        // Per-indicator stats
+        const indicators = [];
+        PILLARS.forEach((p) => {
+          p.subCols.forEach((s) => {
+            const isCountry = p.level === "country";
+
+            // Overall row coverage
+            const presentRows = records.filter((r) => {
+              const v = r[s.rawCol];
+              return v !== null && v !== undefined && v !== "" && !Number.isNaN(+v);
+            }).length;
+
+            // Country coverage (deduplicated)
+            let countryPresent = null;
+            if (isCountry) {
+              const seen = new Set();
+              const presentSet = new Set();
+              records.forEach((r) => {
+                if (seen.has(r.location_code)) return;
+                seen.add(r.location_code);
+                const v = r[s.rawCol];
+                if (v !== null && v !== undefined && v !== "" && !Number.isNaN(+v))
+                  presentSet.add(r.location_code);
+              });
+              countryPresent = presentSet.size;
+            }
+
+            // Per-region row coverage
+            const regionPct = {};
+            REGIONS.forEach((reg) => {
+              const regRows = records.filter((r) => r.Region === reg);
+              const regPresent = regRows.filter((r) => {
+                const v = r[s.rawCol];
+                return v !== null && v !== undefined && v !== "" && !Number.isNaN(+v);
+              }).length;
+              regionPct[reg] = regRows.length ? regPresent / regRows.length : 0;
+            });
+
+            indicators.push({
+              label: s.label,
+              pillarKey: p.key,
+              pillarLabel: p.label,
+              pillarColor: p.color,
+              level: p.level,
+              rowPct: presentRows / n,
+              countryPresent,
+              regionPct,
+              isInverted: s.formula.trimStart().startsWith("1 −"),
+            });
+          });
+        });
+
+        return { summary: { high, mid, low, total: n }, indicators };
+      }
+
+      function buildCoveragePanel() {
+        if (!allRecords) return;
+        const { summary, indicators } = computeCoveragePanel(allRecords);
+
+        // Summary badges
+        document.getElementById("covpanel-summary").innerHTML = [
+          { cls: "high", label: "High ≥90%",      count: summary.high },
+          { cls: "mid",  label: "Moderate 70–89%", count: summary.mid  },
+          { cls: "low",  label: "Low <70%",        count: summary.low  },
+        ]
+          .map(
+            (b) =>
+              `<span class="covpanel-badge ${b.cls}">${b.label} — ${b.count} rows (${Math.round((b.count / summary.total) * 100)}%)</span>`
+          )
+          .join("");
+
+        // Table rows grouped by pillar
+        let lastPillar = null;
+        document.getElementById("covpanel-rows").innerHTML = indicators
+          .map((ind) => {
+            let section = "";
+            if (ind.pillarKey !== lastPillar) {
+              lastPillar = ind.pillarKey;
+              section = `<tr class="covpanel-section"><td colspan="8">
+                <span class="section-dot" style="background:${ind.pillarColor}"></span>${ind.pillarLabel}
+              </td></tr>`;
+            }
+
+            const overallPct = ind.rowPct * 100;
+            const tier = (pct) => (pct >= 90 ? "high" : pct >= 70 ? "mid" : "low");
+
+            const overallCell = `
+              <div class="cov-wrap">
+                <div class="cov-track"><div class="cov-fill ${tier(overallPct)}" style="width:${overallPct.toFixed(1)}%"></div></div>
+                <span style="font-size:11px;font-weight:600;white-space:nowrap">
+                  ${Math.round(overallPct)}%
+                  <span style="color:var(--muted);font-weight:400">
+                    ${ind.level === "country"
+                      ? `(${ind.countryPresent}/${TOTAL_COUNTRIES} countries)`
+                      : "(rows)"}
+                  </span>
+                </span>
+              </div>`;
+
+            const regionCells = REGIONS.map((reg) => {
+              const pct = ind.regionPct[reg] * 100;
+              return `<td><div class="mini-cov">
+                <div class="mini-track"><div class="mini-fill ${tier(pct)}" style="width:${pct.toFixed(0)}%"></div></div>
+                <span class="mini-pct">${Math.round(pct)}%</span>
+              </div></td>`;
+            }).join("");
+
+            const biasCell =
+              ind.rowPct >= 1
+                ? `<span style="color:var(--muted)">—</span>`
+                : ind.isInverted
+                ? `<span class="cov-bias" title="Zero-filled then inverted: overestimates vulnerability">↑ over</span>`
+                : `<span class="cov-bias" title="Zero-filled: underestimates vulnerability">↓ under</span>`;
+
+            return `${section}<tr>
+              <td class="pinfo-indicator">${ind.label}</td>
+              <td><span class="pinfo-level">${ind.level}</span></td>
+              <td>${overallCell}</td>
+              ${regionCells}
+              <td>${biasCell}</td>
+            </tr>`;
+          })
+          .join("");
+      }
+
+      function toggleCoveragePanel(force) {
+        const panel = document.getElementById("coverage-panel");
+        const btn   = document.getElementById("btn-coverage");
+        const show  = force !== undefined ? force : panel.hidden;
+        if (show) {
+          buildCoveragePanel();
+          panel.hidden = false;
+          btn.classList.add("active");
+          document.getElementById("pillar-info").hidden = true;
+        } else {
+          panel.hidden = true;
+          btn.classList.remove("active");
+        }
+      }
+
       // ── Pillar info card ─────────────────────────────────────────────────────
 
       function showPillarInfo(pillar) {
@@ -1266,15 +1666,31 @@
 
         const tbody = card.querySelector(".pinfo-rows");
         tbody.innerHTML = pillar.subCols
-          .map(
-            (s) => `
+          .map((s) => {
+            const pct = (coverageCache[s.rawCol] ?? 1) * 100;
+            const tierClass = pct >= 90 ? "high" : pct >= 70 ? "mid" : "low";
+            const isInverted = s.formula.trimStart().startsWith("1 −");
+            const biasTitle = pct >= 100
+              ? "Complete data — no imputation"
+              : isInverted
+              ? "Missing values are zero-filled then inverted: overestimates vulnerability"
+              : "Missing values are zero-filled: underestimates vulnerability";
+            const biasSymbol = pct >= 100 ? "" : isInverted ? "↑ bias" : "↓ bias";
+            return `
           <tr>
             <td class="pinfo-indicator">${s.label}</td>
             <td class="pinfo-source"><a href="${s.url}" target="_blank" rel="noopener">${s.source}</a></td>
             <td>${s.freq}</td>
             <td><span class="pinfo-formula">${s.formula}</span></td>
-          </tr>`
-          )
+            <td class="pinfo-cov">
+              <div class="cov-wrap">
+                <div class="cov-track"><div class="cov-fill ${tierClass}" style="width:${pct.toFixed(1)}%"></div></div>
+                <span class="cov-pct">${Math.round(pct)}%</span>
+                ${biasSymbol ? `<span class="cov-bias" title="${biasTitle}">${biasSymbol}</span>` : ""}
+              </div>
+            </td>
+          </tr>`;
+          })
           .join("");
 
         card.hidden = false;
@@ -1297,6 +1713,7 @@
         if (mode === "overview") {
           document.getElementById("pillar-info").hidden = true;
         } else {
+          toggleCoveragePanel(false);
           const pillar = PILLARS.find((p) => p.key === mode);
           if (pillar) showPillarInfo(pillar);
         }
@@ -1444,6 +1861,8 @@
         .querySelector("#btn-overview")
         .addEventListener("click", () => setMode("overview"));
 
+      document.getElementById("btn-coverage").addEventListener("click", () => toggleCoveragePanel());
+
       // Collapse / expand all region groups
       let groupsCollapsed = false;
       document.getElementById("btn-collapse").addEventListener("click", () => {
@@ -1477,6 +1896,7 @@
           const { converted, descriptions } = prepareColumns(records);
           allRecords = converted;
           allDescs = descriptions;
+          coverageCache = computeCoverage(allRecords);
           recomputeWeightedIndex();
           setMode("overview");
           document.querySelector("#status").textContent = `${records.length.toLocaleString()} rows`;
