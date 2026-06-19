@@ -259,7 +259,8 @@
     <li><a href="#viz-f">F. Inferred weights</a></li>
 
     <li class="section">Version History</li>
-    <li><a href="#version-v05">v0.5 — current</a></li>
+    <li><a href="#version-v051">v0.5.1 — current</a></li>
+    <li><a href="#version-v05">v0.5 — UX polish</a></li>
     <li><a href="#version-v03">v0.3 — precomputed data</a></li>
     <li><a href="#version-v02">v0.2 — two-level</a></li>
     <li><a href="#version-v0">v0 — static</a></li>
@@ -280,7 +281,7 @@
 
   <div class="callout callout-info">
     <strong>Where things stand:</strong>
-    The <strong>LineUp.js explorer (v0.5)</strong> is deployed on GitHub Pages and is the current
+    The <strong>LineUp.js explorer (v0.5.1)</strong> is deployed on GitHub Pages and is the current
     working tool. A <strong>Streamlit + Claude API app</strong> with maps, LLM narrative, and
     counterfactual analysis is planned next. This document covers both.
   </div>
@@ -317,8 +318,8 @@
   <h2>Quick start</h2>
 
   <h3>Access the deployed tool</h3>
-  <p>The v0.5 explorer is live on GitHub Pages. Open it in any modern browser:</p>
-  <div class="file-tree">https://beluticona.github.io/risk-index/v0.5/</div>
+  <p>The v0.5.1 explorer is live on GitHub Pages. Open it in any modern browser:</p>
+  <div class="file-tree">https://beluticona.github.io/risk-index/v0.5.1/</div>
 
   <h3>Run locally</h3>
   <p>The explorer works without any build step — <code>serve.py</code> converts the Excel file to CSV on the fly:</p>
@@ -351,7 +352,7 @@ python serve.py           <span class="note"># starts local server at http://127
   </div>
 
   <!-- ── Current Explorer ──────────────────────────────────────────────────── -->
-  <div class="section-divider">Current Explorer — v0.5 (shipped)</div>
+  <div class="section-divider">Current Explorer — v0.5.1 (shipped)</div>
 
   <span class="section-anchor" id="explorer-features"></span>
   <h2>How the explorer works</h2>
@@ -1602,9 +1603,59 @@ python-dotenv>=1.0</pre>
   <!-- ── VERSION HISTORY ───────────────────────────────────────────────────── -->
   <div class="section-divider">Version History</div>
 
+  <!-- ── v0.5.1 ─────────────────────────────────────────────────────────────── -->
+  <span class="section-anchor" id="version-v051"></span>
+  <h2>v0.5.1 — Data reliability panel <span class="badge badge-green" style="font-size:12px;vertical-align:middle">shipped</span></h2>
+
+  <p>
+    Adds two reliability-focused features on top of v0.5. No data changes, no structural changes —
+    all computed from the same baked CSV at page load.
+  </p>
+
+  <h3>What changed from v0.5</h3>
+  <table>
+    <thead><tr><th>Area</th><th>Before</th><th>v0.5.1</th></tr></thead>
+    <tbody>
+      <tr>
+        <td>Pillar info card — Coverage column</td>
+        <td>Card showed sub-indicator name, source, frequency, and normalization formula only</td>
+        <td>A fifth column shows a fill bar + percentage of the 755 rows with non-null data for that
+          sub-indicator. For inverted indicators (null → zero-fill → inverted), a
+          <strong>↑ over</strong> / <strong>↓ under</strong> bias label (with tooltip) signals
+          whether missing data overestimates or underestimates vulnerability.</td>
+      </tr>
+      <tr>
+        <td>Data reliability panel</td>
+        <td>No dataset-wide reliability view existed</td>
+        <td>A persistent <strong>Data reliability</strong> button (amber, top bar) opens a
+          full-width panel below the header. The panel shows:<br>
+          <ul style="margin:6px 0 0 1em;padding:0">
+            <li><strong>Summary row</strong>: High ≥90% / Moderate 70–89% / Low &lt;70% row
+              counts (weighted by pillar weight × fraction of sub-indicators present per row)</li>
+            <li><strong>Per-indicator table</strong> grouped by pillar: overall coverage % with
+              country count for country-level indicators (e.g. <em>37/48 countries</em>), four
+              mini fill bars for Africa / Asia / N. America / S. America, and bias direction</li>
+          </ul>
+          The regional breakdown immediately surfaces geographic gaps — e.g. Active Risks
+          (ACAPS) is 0% for S. America and 19% for N. America because ACAPS only tracks
+          active crisis contexts.
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="callout callout-tip">
+    <strong>Reliability computation:</strong> Each row's reliability score is the weighted sum
+    of per-pillar completeness fractions using the default pillar weights (Linguistic 20%,
+    Crisis Risk 25%, Comms &amp; Tech 15%, Language Tech 25%, Social &amp; Econ 15%). A pillar
+    contributes its full weight only if all its sub-indicators are non-null. The score is
+    computed from default weights regardless of any user slider adjustments, since it reflects
+    a structural property of the dataset.
+  </div>
+
   <!-- ── v0.5 ───────────────────────────────────────────────────────────────── -->
   <span class="section-anchor" id="version-v05"></span>
-  <h2>v0.5 — UX polish &amp; source transparency <span class="badge badge-green" style="font-size:12px;vertical-align:middle">shipped</span></h2>
+  <h2>v0.5 — UX polish &amp; source transparency <span class="badge badge-blue" style="font-size:12px;vertical-align:middle">superseded</span></h2>
 
   <p>
     A focused UX release on top of v0.3 — no data changes, no stack changes. The goal was to make
