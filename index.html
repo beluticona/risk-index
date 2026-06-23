@@ -973,7 +973,7 @@
     <header>
       <div class="topline">
         <h1>LT4CR Risk Index Explorer</h1>
-        <a href="./docs/" class="docs-btn" target="_blank">About the index ↗</a>
+        <a href="./docs/index.html" class="docs-btn" target="_blank">About the index ↗</a>
         <button id="btn-coverage" class="coverage-btn">Data reliability</button>
         <span id="status">Loading…</span>
         <div id="mode-bar">
@@ -1315,7 +1315,7 @@
         location_name:   { label: "Country",       width: 130 },
         weighted_index:  { label: "Score", width: 120, color: "#2c3e50" },
 
-        // Pillar columns — each pillar's color applied to its bar
+        // Pillar columns: each pillar's color applied to its bar
         Linguistic_Indicators_norm:                        { label: "Linguistic",    width: 120, color: "#3498db" },
         Crisis_Risk_Indicators_norm:                       { label: "Crisis Risk",   width: 120, color: "#e74c3c" },
         Communications_and_Technology_Indicators_norm:     { label: "Comms & Tech",  width: 120, color: "#9b59b6" },
@@ -1455,7 +1455,7 @@
         return cache;
       }
 
-      // Weights — integers 0-100, always sum to 100
+      // Weights: integers 0-100, always sum to 100
       const currentWeights = Object.fromEntries(
         PILLARS.map((p) => [p.key, p.defaultWeight])
       );
@@ -1490,7 +1490,7 @@
         const remaining = (100 - lockedSum) - newVal;
 
         if (free.length === 0) {
-          // All siblings locked — just apply the clamp, nothing to redistribute
+          // All siblings locked, just apply the clamp; nothing to redistribute
         } else if (freeSum > 0) {
           let distributed = 0;
           free.forEach((p, i) => {
@@ -1503,7 +1503,7 @@
             }
           });
         } else {
-          // Free pillars are all 0 — split equally
+          // Free pillars are all 0, split equally
           const share = Math.floor(remaining / free.length);
           free.forEach((p, i) => {
             currentWeights[p.key] = share + (i < remaining % free.length ? 1 : 0);
@@ -1618,7 +1618,7 @@
           lockBtn.className = "w-lock";
           lockBtn.dataset.key = p.key;
           lockBtn.textContent = "fix";
-          lockBtn.title = "Fix this weight — it won't change when others are adjusted";
+          lockBtn.title = "Fix this weight so it won't change when others are adjusted";
           lockBtn.style.setProperty("--pillar-color", p.color);
           lockBtn.addEventListener("click", () => {
             if (lockedWeights.has(p.key)) lockedWeights.delete(p.key);
@@ -2019,7 +2019,7 @@
         ]
           .map(
             (b) =>
-              `<span class="covpanel-badge ${b.cls}">${b.label} — ${b.count} rows (${Math.round((b.count / summary.total) * 100)}%)</span>`
+              `<span class="covpanel-badge ${b.cls}">${b.label}: ${b.count} rows (${Math.round((b.count / summary.total) * 100)}%)</span>`
           )
           .join("");
 
@@ -2061,7 +2061,7 @@
 
             const biasCell =
               ind.rowPct >= 1
-                ? `<span style="color:var(--muted)">—</span>`
+                ? `<span style="color:var(--muted)">n/a</span>`
                 : ind.isInverted
                 ? `<span class="cov-bias" title="Zero-filled then inverted: overestimates vulnerability">↑ over</span>`
                 : `<span class="cov-bias" title="Zero-filled: underestimates vulnerability">↓ under</span>`;
@@ -2119,7 +2119,7 @@
             const tierClass = pct >= 90 ? "high" : pct >= 70 ? "mid" : "low";
             const isInverted = s.formula.trimStart().startsWith("1 −");
             const biasTitle = pct >= 100
-              ? "Complete data — no imputation"
+              ? "Complete data, no imputation"
               : isInverted
               ? "Missing values are zero-filled then inverted: overestimates vulnerability"
               : "Missing values are zero-filled: underestimates vulnerability";
@@ -2194,10 +2194,10 @@
       }
 
       function buildPanelHTML(record) {
-        const score = fmt(record[WEIGHTED_COL]) ?? "—";
+        const score = fmt(record[WEIGHTED_COL]) ?? "n/a";
 
         const pillarSections = PILLARS.map((pillar) => {
-          const pillarScore = fmt(record[pillar.normCol]) ?? "—";
+          const pillarScore = fmt(record[pillar.normCol]) ?? "n/a";
           const levelClass = pillar.level === "country" ? "country" : "language";
           const levelText =
             pillar.level === "country" ? "country-level" : "language-level";
@@ -2215,10 +2215,10 @@
 
               const rawDisplay = isNull
                 ? '<span class="missing">no data</span>'
-                : fmt(rawVal, 2) ?? "—";
-              const normDisplay = fmt(normVal) ?? "—";
+                : fmt(rawVal, 2) ?? "n/a";
+              const normDisplay = fmt(normVal) ?? "n/a";
               const contribDisplay =
-                contribVal !== undefined ? fmt(contribVal) : "—";
+                contribVal !== undefined ? fmt(contribVal) : "n/a";
 
               return `
                 <tr class="${isNull ? "null-row" : ""}">
@@ -2234,7 +2234,7 @@
                     <span class="freq">${sub.freq}</span>
                   </td>
                 </tr>
-                ${isNull ? `<tr class="null-note"><td colspan="7">⚠ No source data — filled as 0 before aggregation</td></tr>` : ""}
+                ${isNull ? `<tr class="null-note"><td colspan="7">⚠ No source data, filled as 0 before aggregation</td></tr>` : ""}
               `;
             })
             .join("");
@@ -2268,8 +2268,8 @@
         return `
           <div class="panel-top">
             <button class="close-btn" onclick="hideSidePanel()" title="Close">×</button>
-            <span class="panel-lang">${record.language_name ?? "—"}</span>
-            <span class="panel-country">${record.location_name ?? "—"}</span>
+            <span class="panel-lang">${record.language_name ?? "n/a"}</span>
+            <span class="panel-country">${record.location_name ?? "n/a"}</span>
             <div class="panel-meta">
               ${record.Region ?? ""} · <em>${record.status ?? ""}</em>
             </div>
