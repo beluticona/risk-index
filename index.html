@@ -68,9 +68,20 @@
       #mode-bar {
         display: flex;
         flex-wrap: wrap;
-        gap: 6px;
+        gap: 6px 8px;
         align-items: center;
         margin-left: auto;
+      }
+
+      /* When the viewport is narrow (or the user zooms in), drop the mode-bar
+         onto its own full-width row so the chips stay organized instead of
+         crowding against the title controls. */
+      @media (max-width: 1180px) {
+        #mode-bar {
+          margin-left: 0;
+          width: 100%;
+          justify-content: flex-start;
+        }
       }
 
       .mode-btn, .pillar-btn {
@@ -83,15 +94,17 @@
         padding: 4px 10px;
         transition: background 0.12s, color 0.12s, border-color 0.12s;
         white-space: nowrap;
-        color: var(--muted);
+        color: var(--text);
       }
 
-      .mode-btn:hover { background: #f0f2f5; color: var(--text); }
+      .mode-btn:hover { background: #eef1f5; color: var(--text); }
 
       .mode-btn.active {
         background: var(--accent);
         border-color: var(--accent);
         color: #fff;
+        font-weight: 700;
+        box-shadow: 0 1px 3px rgba(39, 110, 241, 0.35);
       }
 
       .pillar-btn {
@@ -99,14 +112,36 @@
       }
 
       .pillar-btn:hover {
-        background: #f0f2f5;
+        background: #eef1f5;
         color: var(--text);
       }
 
       .pillar-btn.active {
-        background: color-mix(in srgb, var(--pillar-color, #276ef1) 12%, #fff);
-        border-color: var(--pillar-color, var(--border));
-        color: var(--text);
+        background: var(--pillar-color, var(--accent));
+        border-color: var(--pillar-color, var(--accent));
+        color: #fff;
+        font-weight: 700;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.22);
+      }
+
+      /* ── Composition bar (custom LineUp renderer) ── */
+      .comp-cell {
+        align-items: stretch;
+        display: flex;
+        height: 100%;
+        overflow: hidden;
+        width: 100%;
+      }
+      .comp-seg {
+        align-items: center;
+        display: flex;
+        font-size: 10px;
+        font-weight: 700;
+        justify-content: center;
+        min-width: 0;
+        overflow: hidden;
+        text-shadow: 0 0 2px rgba(0, 0, 0, 0.35);
+        white-space: nowrap;
       }
 
       /* ── App body ── */
@@ -413,10 +448,42 @@
 
       .w-slider {
         -webkit-appearance: none;
-        accent-color: var(--pillar-color, var(--accent));
+        appearance: none;
+        background: transparent;
         cursor: pointer;
-        height: 4px;
-        width: 80px;
+        height: 16px;
+        width: 90px;
+      }
+      /* Track */
+      .w-slider::-webkit-slider-runnable-track {
+        background: #cdd5e0;
+        border-radius: 3px;
+        height: 6px;
+      }
+      .w-slider::-moz-range-track {
+        background: #cdd5e0;
+        border-radius: 3px;
+        height: 6px;
+      }
+      /* Thumb (colored per pillar) */
+      .w-slider::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        appearance: none;
+        background: var(--pillar-color, var(--accent));
+        border: 2px solid #fff;
+        border-radius: 50%;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.35);
+        height: 15px;
+        margin-top: -5px;
+        width: 15px;
+      }
+      .w-slider::-moz-range-thumb {
+        background: var(--pillar-color, var(--accent));
+        border: 2px solid #fff;
+        border-radius: 50%;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.35);
+        height: 15px;
+        width: 15px;
       }
 
       .w-input {
@@ -499,12 +566,15 @@
       .w-total.warn { color: #e67e22; }
 
       /* ── Pillar groups in mode-bar ── */
-      .mode-separator {
-        align-self: center;
-        background: var(--border);
-        flex-shrink: 0;
-        height: 18px;
-        width: 1px;
+      .mb-chip {
+        align-items: center;
+        background: #f4f6f9;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        display: flex;
+        flex-wrap: nowrap;
+        gap: 6px;
+        padding: 3px 8px;
       }
 
       .pillar-group {
@@ -570,10 +640,39 @@
 
       .pinfo-header {
         align-items: center;
+        cursor: pointer;
         display: flex;
         gap: 8px;
         margin-bottom: 8px;
+        user-select: none;
       }
+
+      .pinfo-caret {
+        color: var(--muted);
+        flex-shrink: 0;
+        font-size: 10px;
+        width: 12px;
+      }
+
+      .pinfo-hint {
+        color: var(--muted);
+        display: none;
+        font-size: 11px;
+        font-style: italic;
+      }
+
+      .pinfo-toggle {
+        color: var(--accent);
+        font-size: 11px;
+        font-weight: 600;
+        margin-left: auto;
+      }
+
+      /* Collapsed: hide the table, keep a thin clickable bar that hints content */
+      #pillar-info.is-collapsed { padding-bottom: 8px; }
+      #pillar-info.is-collapsed .pinfo-header { margin-bottom: 0; }
+      #pillar-info.is-collapsed .pinfo-body { display: none; }
+      #pillar-info.is-collapsed .pinfo-hint { display: inline; }
 
       .pinfo-dot {
         background: var(--pinfo-color, var(--accent));
@@ -879,18 +978,16 @@
         <span id="status">Loading…</span>
         <div id="mode-bar">
           <button id="btn-overview" class="mode-btn active">Overview mode</button>
-          <button id="btn-collapse" class="mode-btn" title="Collapse all groups into summary rows">Collapse groups</button>
-          <span class="mode-separator"></span>
-          <span class="pillar-group-label">Group by</span>
-          <button id="btn-group-region"  class="mode-btn active">Region</button>
-          <button id="btn-group-country" class="mode-btn">Country</button>
-          <button id="btn-group-nested"  class="mode-btn">Region › Country</button>
-          <span class="mode-separator"></span>
-          <div class="pillar-group" id="group-language">
+          <div class="mb-chip">
+            <span class="pillar-group-label">Group by</span>
+            <button id="btn-group-region"  class="mode-btn active">Region</button>
+            <button id="btn-group-country" class="mode-btn">Country</button>
+            <button id="btn-group-nested"  class="mode-btn">Region › Country</button>
+          </div>
+          <div class="mb-chip pillar-group" id="group-language">
             <span class="pillar-group-label">language-level</span>
           </div>
-          <span class="mode-separator"></span>
-          <div class="pillar-group" id="group-country">
+          <div class="mb-chip pillar-group" id="group-country">
             <span class="pillar-group-label">country-level</span>
           </div>
         </div>
@@ -933,11 +1030,14 @@
     </div>
 
     <div id="pillar-info" hidden>
-      <div class="pinfo-header">
+      <div class="pinfo-header" id="pinfo-header" role="button" tabindex="0"
+           title="Show or hide sources, normalization & coverage">
+        <span class="pinfo-caret" aria-hidden="true">▾</span>
         <span class="pinfo-dot"></span>
         <strong class="pinfo-title"></strong>
         <span class="pinfo-level"></span>
-        <button class="pinfo-close" onclick="document.getElementById('pillar-info').hidden=true">×</button>
+        <span class="pinfo-hint">sources · update frequency · normalization · coverage</span>
+        <span class="pinfo-toggle">hide</span>
       </div>
       <div class="pinfo-body">
         <table class="pinfo-table">
@@ -1264,6 +1364,73 @@
         return Math.round(base * scale());
       }
 
+      // ── Color shades for stacked sub-indicator segments ───────────────────────
+
+      function hexToHsl(hex) {
+        let h = hex.replace("#", "");
+        if (h.length === 3) h = h.split("").map((c) => c + c).join("");
+        const r = parseInt(h.slice(0, 2), 16) / 255;
+        const g = parseInt(h.slice(2, 4), 16) / 255;
+        const b = parseInt(h.slice(4, 6), 16) / 255;
+        const max = Math.max(r, g, b), min = Math.min(r, g, b);
+        let hue = 0, sat = 0; const lig = (max + min) / 2;
+        if (max !== min) {
+          const d = max - min;
+          sat = lig > 0.5 ? d / (2 - max - min) : d / (max + min);
+          if (max === r) hue = (g - b) / d + (g < b ? 6 : 0);
+          else if (max === g) hue = (b - r) / d + 2;
+          else hue = (r - g) / d + 4;
+          hue /= 6;
+        }
+        return { h: hue * 360, s: sat * 100, l: lig * 100 };
+      }
+
+      function hslToHex(h, s, l) {
+        s /= 100; l /= 100;
+        const k = (n) => (n + h / 30) % 12;
+        const a = s * Math.min(l, 1 - l);
+        const f = (n) => {
+          const c = l - a * Math.max(-1, Math.min(k(n) - 3, Math.min(9 - k(n), 1)));
+          return Math.round(255 * c).toString(16).padStart(2, "0");
+        };
+        return `#${f(0)}${f(8)}${f(4)}`;
+      }
+
+      // n shades of a base color, dark → light, for adjacent stack segments
+      function shadeRamp(hex, n) {
+        if (n <= 1) return [hex];
+        const { h, s, l } = hexToHsl(hex);
+        const out = [];
+        for (let i = 0; i < n; i++) {
+          const t = i / (n - 1);
+          const ll = Math.max(28, Math.min(78, l - 14 + t * 36));
+          out.push(hslToHex(h, s, ll));
+        }
+        return out;
+      }
+
+      // Effective per-sub-indicator weight, recovered from contrib / norm.
+      // The _contrib columns already encode the design weighting (including
+      // per-row missing-data redistribution); the median ratio is the nominal
+      // weight used to proportion the drill-down stack segments.
+      function computeSubWeights(records) {
+        PILLARS.forEach((p) => {
+          p.subCols.forEach((s) => {
+            const ratios = [];
+            for (const r of records) {
+              const norm = +r[s.col];
+              const contrib = +r[`${s.col}_contrib`];
+              if (norm > 1e-6 && Number.isFinite(norm) && Number.isFinite(contrib))
+                ratios.push(contrib / norm);
+            }
+            ratios.sort((a, b) => a - b);
+            s._weight = ratios.length
+              ? ratios[Math.floor(ratios.length / 2)]
+              : 1 / p.subCols.length;
+          });
+        });
+      }
+
       // ── State ────────────────────────────────────────────────────────────────
 
       let allRecords = null;
@@ -1570,39 +1737,106 @@
       // bars sum exactly to the pillar score shown in the overview.
       // See CrisisVoices/index/build_index.py for the formula.
 
-      function getColsForMode(mode) {
-        if (mode === "overview") {
-          return [
-            ...CONTEXT_COLS,
-            WEIGHTED_COL,
-            ...PILLARS.map((p) => p.normCol),
-          ];
-        }
-        const pillar = PILLARS.find((p) => p.key === mode);
-        if (!pillar) return getColsForMode("overview");
-        return [
-          ...CONTEXT_COLS,
-          WEIGHTED_COL,
-          pillar.normCol,
-          ...pillar.subCols.map((s) => `${s.col}_contrib`),
-        ];
+      // ── Composition bar: contributions that sum to the score ──────────────────
+      // Each segment's value is weight × indicator value (the contribution), so the
+      // labelled numbers across one bar add up to the row's score. Overview → the
+      // 5 pillar contributions (sum = weighted index). Drill-down → that pillar's
+      // sub-indicator contributions (the exact *_contrib columns, sum = pillar score).
+
+      function contrastText(hex) {
+        try { return hexToHsl(hex).l > 62 ? "#1f2933" : "#ffffff"; }
+        catch (e) { return "#ffffff"; }
       }
 
+      // Per-row segments [{ label, color, value }]; values are in [0,1] and sum to
+      // the relevant score for the current mode.
+      function compositionParts(record) {
+        const pillar = PILLARS.find((p) => p.key === currentMode);
+        if (!pillar) {
+          const total = Object.values(currentWeights).reduce((a, b) => a + b, 0) || 1;
+          return PILLARS.map((p) => ({
+            label: p.label,
+            color: p.color,
+            value: (record[p.normCol] ?? 0) * currentWeights[p.key] / total,
+          }));
+        }
+        const colors = shadeRamp(pillar.color, pillar.subCols.length);
+        return pillar.subCols.map((s, i) => ({
+          label: s.label,
+          color: colors[i],
+          value: +record[`${s.col}_contrib`] || 0,
+        }));
+      }
+
+      // Group-row segments: mean contribution per slot across the group's rows.
+      function meanComposition(records) {
+        const template = compositionParts(records[0]);
+        const sums = template.map(() => 0);
+        records.forEach((r) => {
+          compositionParts(r).forEach((part, i) => { sums[i] += part.value; });
+        });
+        return template.map((part, i) => ({
+          label: part.label,
+          color: part.color,
+          value: sums[i] / records.length,
+        }));
+      }
+
+      function renderComposition(node, parts, colWidth) {
+        node.innerHTML = parts
+          .map((p) => {
+            const frac = Math.max(0, p.value);            // value already in [0,1]
+            const showLabel = frac * colWidth >= 26;       // only if segment is wide enough
+            return (
+              `<span class="comp-seg" title="${p.label}: weight×value = ${p.value.toFixed(3)}" ` +
+              `style="flex:0 0 ${(frac * 100).toFixed(3)}%;background:${p.color};color:${contrastText(p.color)}">` +
+              `${showLabel ? p.value.toFixed(2) : ""}</span>`
+            );
+          })
+          .join("");
+      }
+
+      // Custom LineUp renderer: paints the labelled, summing-to-score segment bar.
+      const compositionRenderer = {
+        title: "Composition",
+        canRender: (col, mode) =>
+          mode === LineUpJS.ERenderMode.CELL || mode === LineUpJS.ERenderMode.GROUP,
+        create: (col) => ({
+          template: `<div class="comp-cell"></div>`,
+          update: (node, d) => renderComposition(node, compositionParts(d.v), col.getWidth()),
+        }),
+        createGroup: (col) => ({
+          template: `<div class="comp-cell"></div>`,
+          update: (node, group, rows) => {
+            const recs = (rows || []).map((r) => r.v).filter(Boolean);
+            if (recs.length) renderComposition(node, meanComposition(recs), col.getWidth());
+          },
+        }),
+      };
+
       function buildLineUp(mode) {
-        const colKeys = getColsForMode(mode);
+        const pillar = PILLARS.find((p) => p.key === mode);
 
-        // Region drives groupBy — kept in ranking but width-0 (invisible)
-        const descKeys = colKeys.includes("Region") ? colKeys : ["Region", ...colKeys];
+        // The score that anchors this mode:
+        //   overview   → composite final score (weighted_index)
+        //   drill-down → that pillar's indicator score (its *_norm column)
+        // The composition bar is painted on this same column, so sorting by it
+        // orders rows by the score shown. Every per-segment value is read straight
+        // from the record by the renderer, so indicator columns are not added.
+        const scoreKey = pillar ? pillar.normCol : WEIGHTED_COL;
 
-        const orderedDescs = descKeys
+        // Text label of the exact score, refreshed for the current mode.
+        allRecords.forEach((r) => {
+          r.__display_score = (r[scoreKey] ?? 0).toFixed(2);
+        });
+
+        const dataKeys = ["Region", ...CONTEXT_COLS, scoreKey];
+
+        const orderedDescs = dataKeys
           .map((key) => {
             const base = allDescs.find((d) => d.column === key);
             if (!base) return null;
-            // _contrib cols (from data) inherit label/width/color from underlying _norm col
-            const metaKey = key.endsWith("_contrib")
-              ? key.slice(0, -8)
-              : key;
-            const meta = COL_META[metaKey] || {};
+            const meta = COL_META[key] || {};
             return {
               ...base,
               ...(meta.label !== undefined && { label: meta.label }),
@@ -1612,6 +1846,22 @@
           })
           .filter(Boolean);
 
+        // Label the composition (bar) column for the current mode
+        const barDesc = orderedDescs.find((d) => d.column === scoreKey);
+        if (barDesc) {
+          barDesc.label = pillar
+            ? pillar.label + " breakdown (Σ weight × value)"
+            : "Composite breakdown (Σ weight × value)";
+        }
+
+        // Text-only exact score column
+        orderedDescs.push({
+          column: "__display_score",
+          type: "string",
+          label: pillar ? "Indicator score" : "Composite score",
+          width: px(70),
+        });
+
         const container = document.querySelector("#lineup");
         container.innerHTML = "";
 
@@ -1619,42 +1869,49 @@
           allRecords,
           orderedDescs
         );
-        provider.deriveDefault();
         currentProvider = provider;
 
-        const ranking = provider.getLastRanking();
-        const byCol = (key) =>
-          ranking.find((c) => c.desc && c.desc.column === key);
+        const ranking = provider.pushRanking();
+        const descOf = (key) => orderedDescs.find((d) => d.column === key);
+        const addCol = (key) => {
+          const d = descOf(key);
+          if (!d) return null;
+          const col = provider.create(d);
+          ranking.push(col);
+          return col;
+        };
 
-        const wCol = byCol(WEIGHTED_COL);
-        if (wCol) ranking.sortBy(wCol, false);
+        const regionCol = addCol("Region");      // width-0, drives groupBy
+        addCol("language_name");
+        const countryCol = addCol("location_name");
+        addCol("__display_score");                // text-only exact score
+
+        // The composition bar: the score column painted by the custom renderer.
+        // Segments are labelled with weight × value and sum to the score shown.
+        const compCol = addCol(scoreKey);
+        if (compCol) {
+          compCol.setWidth(px(380));
+          compCol.setRenderer("composition");
+          compCol.setGroupRenderer("composition");
+        }
+
+        // Sort by the score shown (composite or indicator), descending.
+        if (compCol) ranking.sortBy(compCol, false);
 
         if (groupMode === "nested") {
-          const regionCol  = byCol("Region");
-          const countryCol = byCol("location_name");
           if (regionCol && countryCol) ranking.groupBy(regionCol, countryCol);
         } else {
-          const groupCol = groupMode === "country"
-            ? byCol("location_name")
-            : byCol("Region");
+          const groupCol = groupMode === "country" ? countryCol : regionCol;
           if (groupCol) ranking.groupBy(groupCol);
         }
 
         const aggCol = ranking.find((c) => c.desc && c.desc.type === "aggregate");
-        if (aggCol) {
-          aggCol.setWidth(px(140));
-          // Wire the "Collapse regions" button
-          const collapseBtn = document.getElementById("btn-collapse");
-          if (collapseBtn) {
-            collapseBtn._aggCol = aggCol;
-            collapseBtn._provider = provider;
-            collapseBtn._ranking = ranking;
-          }
-        }
+        if (aggCol) aggCol.setWidth(px(140));
 
         const lineup = new LineUpJS.Taggle(container, provider, {
           rowHeight: px(24),
           groupHeight: px(48),
+          renderers: { composition: compositionRenderer },
         });
         lineup.update();
 
@@ -1837,6 +2094,16 @@
 
       // ── Pillar info card ─────────────────────────────────────────────────────
 
+      let pillarInfoCollapsed = false;
+
+      function setPillarInfoCollapsed(collapsed) {
+        pillarInfoCollapsed = collapsed;
+        const card = document.getElementById("pillar-info");
+        card.classList.toggle("is-collapsed", collapsed);
+        card.querySelector(".pinfo-caret").textContent = collapsed ? "▸" : "▾";
+        card.querySelector(".pinfo-toggle").textContent = collapsed ? "show details" : "hide";
+      }
+
       function showPillarInfo(pillar) {
         const card = document.getElementById("pillar-info");
         card.style.setProperty("--pinfo-color", pillar.color);
@@ -1875,6 +2142,7 @@
           .join("");
 
         card.hidden = false;
+        setPillarInfoCollapsed(pillarInfoCollapsed);
       }
 
       // ── Mode switching ───────────────────────────────────────────────────────
@@ -2044,55 +2312,27 @@
 
       document.getElementById("btn-coverage").addEventListener("click", () => toggleCoveragePanel());
 
-      // Collapse / expand all region groups
-      let groupsCollapsed = false;
-      document.getElementById("btn-collapse").addEventListener("click", () => {
-        const btn = document.getElementById("btn-collapse");
-        if (!btn._aggCol) return;
-        groupsCollapsed = !groupsCollapsed;
-        btn.textContent = groupsCollapsed ? "Expand groups" : "Collapse groups";
-        btn.classList.toggle("active", groupsCollapsed);
-        btn._aggCol.setCollapseAll(groupsCollapsed);
+      // Collapse / expand the pillar-info card (sources, normalization, coverage)
+      document.getElementById("pinfo-header").addEventListener("click", () => {
+        setPillarInfoCollapsed(!pillarInfoCollapsed);
       });
 
-      // Group-by toggle (Region / Country)
-      document.getElementById("btn-group-region").addEventListener("click", () => {
-        if (groupMode === "region") return;
-        groupMode = "region";
-        groupsCollapsed = false;
-        document.getElementById("btn-group-region").classList.add("active");
-        document.getElementById("btn-group-country").classList.remove("active");
-        document.getElementById("btn-group-nested").classList.remove("active");
-        const collapseBtn = document.getElementById("btn-collapse");
-        collapseBtn.textContent = "Collapse groups";
-        collapseBtn.classList.remove("active");
+      // Group-by toggle (Region / Country / Region › Country)
+      const GROUP_BTNS = {
+        region:  "btn-group-region",
+        country: "btn-group-country",
+        nested:  "btn-group-nested",
+      };
+      function selectGroupMode(mode) {
+        if (groupMode === mode) return;
+        groupMode = mode;
+        Object.entries(GROUP_BTNS).forEach(([key, id]) => {
+          document.getElementById(id).classList.toggle("active", key === mode);
+        });
         if (allRecords) setMode(currentMode);
-      });
-
-      document.getElementById("btn-group-country").addEventListener("click", () => {
-        if (groupMode === "country") return;
-        groupMode = "country";
-        groupsCollapsed = false;
-        document.getElementById("btn-group-country").classList.add("active");
-        document.getElementById("btn-group-region").classList.remove("active");
-        document.getElementById("btn-group-nested").classList.remove("active");
-        const collapseBtn = document.getElementById("btn-collapse");
-        collapseBtn.textContent = "Collapse groups";
-        collapseBtn.classList.remove("active");
-        if (allRecords) setMode(currentMode);
-      });
-
-      document.getElementById("btn-group-nested").addEventListener("click", () => {
-        if (groupMode === "nested") return;
-        groupMode = "nested";
-        groupsCollapsed = false;
-        document.getElementById("btn-group-nested").classList.add("active");
-        document.getElementById("btn-group-region").classList.remove("active");
-        document.getElementById("btn-group-country").classList.remove("active");
-        const collapseBtn = document.getElementById("btn-collapse");
-        collapseBtn.textContent = "Collapse groups";
-        collapseBtn.classList.remove("active");
-        if (allRecords) setMode(currentMode);
+      }
+      Object.entries(GROUP_BTNS).forEach(([mode, id]) => {
+        document.getElementById(id).addEventListener("click", () => selectGroupMode(mode));
       });
 
       // Rebuild on resize so scale() is re-evaluated
@@ -2118,6 +2358,7 @@
           allRecords = converted;
           allDescs = descriptions;
           coverageCache = computeCoverage(allRecords);
+          computeSubWeights(allRecords);
           recomputeWeightedIndex();
           setMode("overview");
           document.querySelector("#status").textContent = `${records.length.toLocaleString()} rows`;

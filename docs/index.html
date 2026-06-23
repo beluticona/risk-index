@@ -266,7 +266,8 @@
     <li><a href="#rd-questions">Open questions</a></li>
 
     <li class="section">Version History</li>
-    <li><a href="#version-v053">v0.5.3 — current</a></li>
+    <li><a href="#version-v06">v0.6 — current</a></li>
+    <li><a href="#version-v053">v0.5.3 — grouping</a></li>
     <li><a href="#version-v052">v0.5.2 — weight tool</a></li>
     <li><a href="#version-v051">v0.5.1 — reliability panel</a></li>
     <li><a href="#version-v05">v0.5 — UX polish</a></li>
@@ -290,7 +291,7 @@
 
   <div class="callout callout-info">
     <strong>Where things stand:</strong>
-    The <strong>LineUp.js explorer (v0.5.3)</strong> is deployed on GitHub Pages and is the current
+    The <strong>LineUp.js explorer (v0.6)</strong> is deployed on GitHub Pages and is the current
     working tool. A <strong>Streamlit + Claude API app</strong> with maps, LLM narrative, and
     counterfactual analysis is planned next. This document covers both.
   </div>
@@ -327,8 +328,8 @@
   <h2>Quick start</h2>
 
   <h3>Access the deployed tool</h3>
-  <p>The v0.5.3 explorer is live on GitHub Pages. Open it in any modern browser:</p>
-  <div class="file-tree">https://beluticona.github.io/risk-index/v0.5.3/</div>
+  <p>The v0.6 explorer is live on GitHub Pages. Open it in any modern browser:</p>
+  <div class="file-tree">https://beluticona.github.io/risk-index/v0.6/</div>
 
   <h3>Run locally</h3>
   <p>The explorer works without any build step — <code>serve.py</code> converts the Excel file to CSV on the fly:</p>
@@ -361,7 +362,7 @@ python serve.py           <span class="note"># starts local server at http://127
   </div>
 
   <!-- ── Current Explorer ──────────────────────────────────────────────────── -->
-  <div class="section-divider">Current Explorer — v0.5.3 (shipped)</div>
+  <div class="section-divider">Current Explorer — v0.6 (shipped)</div>
 
   <span class="section-anchor" id="explorer-features"></span>
   <h2>How the explorer works</h2>
@@ -456,7 +457,10 @@ python serve.py           <span class="note"># starts local server at http://127
   <p>The script runs these steps in order:</p>
   <ol>
     <li>Derive <code>drivers_count</code> from the ACAPS string-list field.</li>
-    <li>Apply per-column normalisation (direct min-max, inverted min-max, divide-by-100, direct inversion).</li>
+    <li>Apply per-column normalisation: direct min-max, inverted min-max, divide-by-100,
+      direct inversion, and — since v0.6 — <strong>log-scaled inverted min-max</strong>
+      (<code>1 − minmax(log1p(x))</code>) for the heavy-tailed Language Technology counts
+      (see the v0.6 entry under Version History).</li>
     <li>Sum normalised sub-indicators → <code>Pillar_Indicators</code>; min-max → <code>Pillar_Indicators_norm</code>.</li>
     <li>Compute 20 <code>*_contrib</code> columns and verify the invariant before writing.</li>
     <li>Compute <code>simple_index</code> (equal-weight average) and <code>weighted_index</code> (default weights).</li>
@@ -2017,9 +2021,95 @@ python-dotenv>=1.0</pre>
   <div class="section-divider">Version History</div>
 
   <!-- ── v0.5.2 ─────────────────────────────────────────────────────────────── -->
+  <!-- ── v0.6 ─────────────────────────────────────────────────────────────── -->
+  <span class="section-anchor" id="version-v06"></span>
+  <h2>v0.6 — Composition bar &amp; log-scaled Language Tech <span class="badge badge-green" style="font-size:12px;vertical-align:middle">shipped</span></h2>
+
+  <p>
+    A redesign of how each ranking row is drawn, plus a methodology fix to the
+    Language Technology pillar in the index builder.
+  </p>
+
+  <h3>Ranking visualisation — single composition bar</h3>
+  <p>
+    Previously each row drew a separate bar for the composite score and one for every pillar
+    (six bars, repeating the same numbers). v0.6 replaces them with a
+    <strong>single stacked composition bar</strong>: each coloured segment is one indicator's
+    <strong>weight × value</strong> (its contribution), so the segment labels in a row
+    <strong>add up to that row's score</strong>, and the bar fills to the score. It is drawn by
+    a custom LineUp.js cell renderer.
+  </p>
+  <table>
+    <thead><tr><th>Area</th><th>Before (v0.5.3)</th><th>v0.6</th></tr></thead>
+    <tbody>
+      <tr>
+        <td>Row encoding</td>
+        <td>Composite-score bar + 5 separate pillar bars (repeated content)</td>
+        <td>One stacked bar; segments = weight × value, labelled, summing to the score shown.</td>
+      </tr>
+      <tr>
+        <td>Overview vs. tabs</td>
+        <td>Always the final score</td>
+        <td>Overview shows the <strong>composite score</strong> (the 5 pillar contributions).
+          Each indicator tab shows that pillar's <strong>indicator score</strong> (its
+          sub-indicator contributions, which sum to the indicator score). Score columns
+          renamed accordingly.</td>
+      </tr>
+      <tr>
+        <td>Sorting</td>
+        <td>By final score in every mode</td>
+        <td>Overview sorts by composite score; each tab sorts by the indicator score shown.</td>
+      </tr>
+      <tr>
+        <td>Indicator-details card</td>
+        <td>Shown on drill-down; the × closed it permanently with no way to reopen</td>
+        <td>Collapsible — the header toggles it, and when collapsed a thin bar hints
+          "sources · update frequency · normalization · coverage". Collapsed state persists
+          across tabs.</td>
+      </tr>
+      <tr>
+        <td>Controls visibility</td>
+        <td>Weight sliders rendered invisible (<code>appearance:none</code> with no track or
+          thumb); group-by and FIX buttons were low-contrast</td>
+        <td>Sliders now have a grey track + coloured thumb; active buttons use solid fills.
+          Also fixed a corrupted <code>:root</code> selector that had silently disabled
+          <em>all</em> CSS variables.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h3>Index builder — log-scaled Language Technology counts (data v3)</h3>
+  <p>
+    The composite score is produced by <code>build_index.py</code>. Its Language Technology
+    pillar sums seven resource counts (Common Voice recorded/validated hours, Wikipedia
+    articles &amp; editors, HuggingFace datasets &amp; models, Google Translate availability).
+    These are <strong>power-law distributed</strong>: a few languages hold values spanning
+    many orders of magnitude (7M articles, 257K models) while most sit at zero. Linear
+    min-max then inversion crushed ~94% of languages to ≈1.0, pinning
+    <strong>78% of the pillar at exactly 1.0</strong> — so the pillar barely discriminated.
+  </p>
+  <p>
+    v0.6 log-scales the six count metrics before inversion
+    (<code>1 − minmax(log1p(x))</code>) and writes a new versioned dataset
+    <code>Final_Index_v3.xlsx</code> (the previous <code>v2</code> is preserved, not
+    overwritten). The exactly-1.0 spike drops from 78% → 27%, distinct pillar values rise
+    from 26 → 158, and the other four pillars are byte-identical.
+  </p>
+
+  <div class="callout callout-info">
+    <strong>Known limitation — Language Tech still bunches near 1.0.</strong>
+    Even after log-scaling, ~78% of rows still score ≥ 0.9 on this pillar. The cause is data
+    coverage: five of the seven sub-indicators have data for fewer than 140 of 755 languages
+    (Common Voice hours ≈ 66; Google Translate ≈ 74; Wikipedia ≈ 135), so they read 1.0 for
+    80–91% of languages and dominate the seven-way sum. Log-scaling removed the artificial
+    spike but cannot create signal where the underlying sources are blank. A coverage-aware
+    aggregation — averaging only the sub-indicators that actually have data, or dropping the
+    near-empty ones — is the candidate fix for a later version.
+  </div>
+
   <!-- ── v0.5.3 ─────────────────────────────────────────────────────────────── -->
   <span class="section-anchor" id="version-v053"></span>
-  <h2>v0.5.3 — Country-level grouping &amp; boxplots <span class="badge badge-green" style="font-size:12px;vertical-align:middle">shipped</span></h2>
+  <h2>v0.5.3 — Country-level grouping &amp; boxplots <span class="badge badge-blue" style="font-size:12px;vertical-align:middle">superseded</span></h2>
 
   <p>
     Adds flexible group-by controls so users can aggregate and compare languages at the
