@@ -583,6 +583,51 @@
         gap: 6px;
       }
 
+      .mb-chip.disabled { opacity: 0.45; pointer-events: none; }
+
+      /* Multi-select dropdown (Focus countries) */
+      .ms { position: relative; }
+      .ms-btn {
+        align-items: center;
+        background: #fff;
+        border: 1px solid #c4ccd6;
+        border-radius: 6px;
+        color: var(--text);
+        cursor: pointer;
+        display: flex;
+        font-size: 12px;
+        font-weight: 600;
+        gap: 6px;
+        padding: 3px 8px;
+      }
+      .ms-btn:hover { border-color: var(--accent); }
+      .ms-btn.is-active { border-color: var(--accent); background: #eef4ff; color: var(--accent); }
+      .ms-caret { color: var(--muted); font-size: 10px; }
+      .ms-pop {
+        position: absolute; top: calc(100% + 5px); left: 0; z-index: 30;
+        width: 230px; background: #fff; border: 1px solid var(--border);
+        border-radius: 8px; box-shadow: 0 6px 22px rgba(0,0,0,0.16); padding: 8px;
+      }
+      .ms-search {
+        width: 100%; border: 1px solid var(--border); border-radius: 5px;
+        font-size: 12px; padding: 5px 7px; margin-bottom: 6px;
+      }
+      .ms-search:focus { border-color: var(--accent); outline: none; }
+      .ms-actions { display: flex; gap: 8px; margin-bottom: 6px; }
+      .ms-actions button {
+        background: none; border: none; color: var(--accent); cursor: pointer;
+        font-size: 11px; font-weight: 700; padding: 2px 0;
+      }
+      .ms-actions button:hover { text-decoration: underline; }
+      .ms-list { max-height: 260px; overflow-y: auto; }
+      .ms-opt {
+        align-items: center; border-radius: 5px; cursor: pointer; display: flex;
+        font-size: 13px; gap: 8px; padding: 4px 6px;
+      }
+      .ms-opt:hover { background: #f0f4ff; }
+      .ms-opt input { accent-color: var(--accent); cursor: pointer; }
+      .ms-empty { color: var(--muted); font-size: 12px; padding: 6px; }
+
       .pillar-group-label {
         color: var(--muted);
         font-size: 10px;
@@ -978,7 +1023,27 @@
         <span id="status">Loading…</span>
         <div id="mode-bar">
           <button id="btn-overview" class="mode-btn active">Overview mode</button>
-          <div class="mb-chip">
+          <div class="mb-chip" id="focus-chip">
+            <span class="pillar-group-label">Focus</span>
+            <div class="ms" id="country-ms">
+              <button type="button" class="ms-btn" id="country-btn"
+                      title="Pin one or more countries to explore across every tab"
+                      aria-haspopup="true" aria-expanded="false">
+                <span id="country-btn-label">All countries</span>
+                <span class="ms-caret" aria-hidden="true">▾</span>
+              </button>
+              <div class="ms-pop" id="country-pop" hidden>
+                <input type="text" class="ms-search" id="country-search"
+                       placeholder="Search countries…" autocomplete="off">
+                <div class="ms-actions">
+                  <button type="button" id="country-all">Select all</button>
+                  <button type="button" id="country-clear">Clear</button>
+                </div>
+                <div class="ms-list" id="country-list"></div>
+              </div>
+            </div>
+          </div>
+          <div class="mb-chip" id="group-by-chip">
             <span class="pillar-group-label">Group by</span>
             <button id="btn-group-region"  class="mode-btn active">Region</button>
             <button id="btn-group-country" class="mode-btn">Country</button>
@@ -1439,7 +1504,8 @@
       let currentProvider = null;
       let coverageCache = {};
       const lockedWeights = new Set();
-      let groupMode = "region"; // "region" | "country"
+      let groupMode = "region"; // "region" | "country" | "nested"
+      let selectedCountries = new Set(); // empty = all countries; otherwise the focused set
 
       function computeCoverage(records) {
         const cache = {};
@@ -1865,8 +1931,15 @@
         const container = document.querySelector("#lineup");
         container.innerHTML = "";
 
+        // Focus countries: when any are pinned, only their rows are shown. The
+        // selection lives in app state (selectedCountries) so it survives every
+        // mode rebuild and persists across tabs.
+        const rows = selectedCountries.size
+          ? allRecords.filter((r) => selectedCountries.has(r.location_name))
+          : allRecords;
+
         const provider = new LineUpJS.LocalDataProvider(
-          allRecords,
+          rows,
           orderedDescs
         );
         currentProvider = provider;
@@ -1898,11 +1971,15 @@
         // Sort by the score shown (composite or indicator), descending.
         if (compCol) ranking.sortBy(compCol, false);
 
-        if (groupMode === "nested") {
-          if (regionCol && countryCol) ranking.groupBy(regionCol, countryCol);
-        } else {
-          const groupCol = groupMode === "country" ? countryCol : regionCol;
-          if (groupCol) ranking.groupBy(groupCol);
+        // Grouping is only meaningful across multiple countries; with exactly one
+        // focused country the list is shown flat (sorted by score).
+        if (selectedCountries.size !== 1) {
+          if (groupMode === "nested") {
+            if (regionCol && countryCol) ranking.groupBy(regionCol, countryCol);
+          } else {
+            const groupCol = groupMode === "country" ? countryCol : regionCol;
+            if (groupCol) ranking.groupBy(groupCol);
+          }
         }
 
         const aggCol = ranking.find((c) => c.desc && c.desc.type === "aggregate");
@@ -1918,7 +1995,7 @@
         // Row selection → side panel
         provider.on("selectionChanged", (indices) => {
           if (indices && indices.length > 0) {
-            const rec = allRecords[indices[0]];
+            const rec = rows[indices[0]];
             if (rec) showSidePanel(rec);
           } else {
             hideSidePanel();
@@ -2094,7 +2171,7 @@
 
       // ── Pillar info card ─────────────────────────────────────────────────────
 
-      let pillarInfoCollapsed = false;
+      let pillarInfoCollapsed = true;
 
       function setPillarInfoCollapsed(collapsed) {
         pillarInfoCollapsed = collapsed;
@@ -2335,6 +2412,82 @@
         document.getElementById(id).addEventListener("click", () => selectGroupMode(mode));
       });
 
+      // Focus-countries multi-select: pin one or more countries across every tab.
+      function setupCountrySelect() {
+        if (!allRecords) return;
+        const btn      = document.getElementById("country-btn");
+        const label    = document.getElementById("country-btn-label");
+        const pop      = document.getElementById("country-pop");
+        const search   = document.getElementById("country-search");
+        const list     = document.getElementById("country-list");
+        const groupChip = document.getElementById("group-by-chip");
+
+        const countries = Array.from(
+          new Set(allRecords.map((r) => r.location_name).filter(Boolean))
+        ).sort((a, b) => a.localeCompare(b));
+
+        // Render the checkbox list (optionally filtered by the search box)
+        function renderList(filter = "") {
+          const f = filter.trim().toLowerCase();
+          const shown = countries.filter((c) => c.toLowerCase().includes(f));
+          list.innerHTML = shown.length
+            ? shown.map((c) =>
+                `<label class="ms-opt"><input type="checkbox" value="${c}"` +
+                `${selectedCountries.has(c) ? " checked" : ""}>${c}</label>`
+              ).join("")
+            : `<div class="ms-empty">No match</div>`;
+        }
+
+        // Reflect the current selection in the button + group-by chip state
+        function reflect() {
+          const n = selectedCountries.size;
+          label.textContent =
+            n === 0 || n === countries.length ? "All countries"
+            : n === 1 ? [...selectedCountries][0]
+            : `${n} countries`;
+          btn.classList.toggle("is-active", n > 0 && n < countries.length);
+          if (groupChip) groupChip.classList.toggle("disabled", n === 1);
+        }
+
+        function openPop(open) {
+          pop.hidden = !open;
+          btn.setAttribute("aria-expanded", String(open));
+          if (open) { renderList(search.value); search.focus(); }
+        }
+
+        btn.addEventListener("click", (e) => {
+          e.stopPropagation();
+          openPop(pop.hidden);
+        });
+        // Keep the popover open when interacting inside it
+        pop.addEventListener("click", (e) => e.stopPropagation());
+        document.addEventListener("click", () => openPop(false));
+
+        search.addEventListener("input", (e) => renderList(e.target.value));
+
+        list.addEventListener("change", (e) => {
+          const cb = e.target;
+          if (!cb.value) return;
+          if (cb.checked) selectedCountries.add(cb.value);
+          else selectedCountries.delete(cb.value);
+          reflect();
+          if (allRecords) setMode(currentMode);
+        });
+
+        document.getElementById("country-all").addEventListener("click", () => {
+          selectedCountries = new Set(countries);
+          renderList(search.value); reflect();
+          if (allRecords) setMode(currentMode);
+        });
+        document.getElementById("country-clear").addEventListener("click", () => {
+          selectedCountries.clear();
+          renderList(search.value); reflect();
+          if (allRecords) setMode(currentMode);
+        });
+
+        reflect();
+      }
+
       // Rebuild on resize so scale() is re-evaluated
       let resizeTimer = null;
       window.addEventListener("resize", () => {
@@ -2360,6 +2513,7 @@
           coverageCache = computeCoverage(allRecords);
           computeSubWeights(allRecords);
           recomputeWeightedIndex();
+          setupCountrySelect();
           setMode("overview");
           document.querySelector("#status").textContent = `${records.length.toLocaleString()} rows`;
         })
