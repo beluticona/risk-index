@@ -706,6 +706,42 @@
       }
       #hint-bar strong { color: var(--text); font-weight: 600; }
 
+      #mode-explainer {
+        align-items: center;
+        background: #f7f9fc;
+        border: 1px solid var(--border);
+        border-left: 4px solid var(--mode-color, var(--accent));
+        border-radius: 6px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px 12px;
+        margin-top: 8px;
+        padding: 8px 10px;
+      }
+
+      #mode-explainer[hidden] { display: none; }
+
+      .mode-explainer-title {
+        color: var(--text);
+        font-size: 12px;
+        font-weight: 700;
+      }
+
+      .mode-explainer-formula {
+        background: #fff;
+        border: 1px solid #e5e9f0;
+        border-radius: 4px;
+        color: var(--text);
+        font-size: 12px;
+        padding: 3px 7px;
+      }
+
+      .mode-explainer-note {
+        color: var(--muted);
+        flex-basis: 100%;
+        font-size: 11px;
+      }
+
       #btn-reset-weights {
         background: none;
         border: 1px solid var(--border);
@@ -1115,6 +1151,7 @@
         <strong>Click a column header</strong> to re-sort &nbsp;·&nbsp;
         country-level pillars share the same value for all languages in a country
       </div>
+      <div id="mode-explainer" hidden></div>
     </header>
 
     <div id="coverage-panel" hidden>
@@ -1185,6 +1222,8 @@
           key: "linguistic",
           label: "Linguistic",
           fullLabel: "Linguistic Indicators",
+          formulaStrip: "Linguistic = speaker population + linguistic diversity",
+          tabNote: "This tab ranks by the Linguistic pillar only. The two subindicators use equal influence before the pillar is rescaled.",
           normCol: "Linguistic_Indicators_norm",
           level: "language",
           color: "#3498db",
@@ -1214,6 +1253,8 @@
           key: "crisis",
           label: "Crisis Risk",
           fullLabel: "Crisis Risk Indicators",
+          formulaStrip: "Crisis Risk = severity + active risks + crisis driver count",
+          tabNote: "This tab ranks by the Crisis Risk pillar only. All three subindicators use equal influence before the pillar is rescaled.",
           normCol: "Crisis_Risk_Indicators_norm",
           level: "country",
           color: "#e74c3c",
@@ -1252,6 +1293,8 @@
           key: "comms",
           label: "Comms & Tech",
           fullLabel: "Communications & Technology",
+          formulaStrip: "Comms & Tech = connectivity + digital language support + app accessibility + ICT development",
+          tabNote: "This tab ranks by the Comms & Tech pillar only. The four subindicators use equal influence before the pillar is rescaled; because they are country-level values, every language in the same country shares the same score.",
           normCol: "Communications_and_Technology_Indicators_norm",
           level: "country",
           color: "#9b59b6",
@@ -1299,6 +1342,8 @@
           key: "langtech",
           label: "Language Tech",
           fullLabel: "Language Technology",
+          formulaStrip: "Language Tech = speech data + Wikipedia + datasets/models + translation support",
+          tabNote: "This tab ranks by the Language Technology pillar only. In v4, subindicators are coverage-weighted: better-covered sources influence the pillar more, while sparse sources count less.",
           normCol: "Language_Technology_Indicators_norm",
           level: "language",
           color: "#1abc9c",
@@ -1373,6 +1418,8 @@
           key: "soceco",
           label: "Social & Econ",
           fullLabel: "Social & Economic",
+          formulaStrip: "Social & Econ = GDP + human development + education + literacy",
+          tabNote: "This tab ranks by the Social & Econ pillar only. The four subindicators use equal influence before the pillar is rescaled; because they are country-level values, every language in the same country shares the same score.",
           normCol: "Social_and_Economic_Indicators_norm",
           level: "country",
           color: "#f39c12",
@@ -1931,7 +1978,7 @@
 
         // The score that anchors this mode:
         //   overview   → composite final score (weighted_index)
-        //   drill-down → that pillar's indicator score (its *_norm column)
+        //   drill-down → that pillar's score (its *_norm column)
         // The composition bar is painted on this same column, so sorting by it
         // orders rows by the score shown. Every per-segment value is read straight
         // from the record by the renderer, so indicator columns are not added.
@@ -1970,7 +2017,7 @@
         orderedDescs.push({
           column: "__display_score",
           type: "string",
-          label: pillar ? "Indicator score" : "Composite score",
+          label: pillar ? "Pillar score" : "Composite score",
           width: px(170),
         });
 
@@ -2282,11 +2329,30 @@
         setPillarInfoCollapsed(pillarInfoCollapsed);
       }
 
+      function updateModeExplainer(pillar) {
+        const explainer = document.getElementById("mode-explainer");
+        if (!pillar) {
+          explainer.hidden = true;
+          explainer.innerHTML = "";
+          return;
+        }
+
+        explainer.style.setProperty("--mode-color", pillar.color);
+        explainer.hidden = false;
+        explainer.innerHTML = `
+          <span class="mode-explainer-title">${pillar.fullLabel} tab</span>
+          <span class="mode-explainer-formula">${pillar.formulaStrip}</span>
+          <span class="mode-explainer-note">${pillar.tabNote}</span>
+        `;
+      }
+
       // ── Mode switching ───────────────────────────────────────────────────────
 
       function setMode(mode) {
         currentMode = mode;
         hideSidePanel();
+        const pillar = PILLARS.find((p) => p.key === mode);
+        updateModeExplainer(pillar);
         buildLineUp(mode);
 
         const overviewBtn = document.querySelector("#btn-overview");
@@ -2300,7 +2366,6 @@
           document.getElementById("pillar-info").hidden = true;
         } else {
           toggleCoveragePanel(false);
-          const pillar = PILLARS.find((p) => p.key === mode);
           if (pillar) showPillarInfo(pillar);
         }
       }
