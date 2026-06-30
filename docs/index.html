@@ -167,8 +167,8 @@
     <p class="lead">
       The Language &amp; Crisis Risk Index is a single score that highlights the linguistic
       communities most likely to be cut off from information and help during a humanitarian
-      emergency, because they have few speakers, little digital language support, and live where
-      crises are active. A <strong>higher score means higher risk</strong>.
+      emergency, because they have large affected populations, little digital language support,
+      and live where crises are active. A <strong>higher score means higher risk</strong>.
     </p>
     <div class="stat-row">
       <div class="stat"><b>755</b><span>language&ndash;country pairs</span></div>
@@ -249,7 +249,7 @@
       <tbody>
         <tr>
           <td><span class="swatch" style="background:var(--p1)"></span><strong>Linguistic</strong></td>
-          <td>Speaker population, Linguistic Diversity Index</td>
+          <td>Speaker population as exposure, Linguistic Diversity Index</td>
           <td>IPUMS / UNFPA census data, UNESCO</td>
           <td>~10-year census cycles</td>
         </tr>
@@ -323,6 +323,12 @@
     </p>
 
     <div class="note">
+      <b>Speaker population is treated as exposure.</b> The current index does not treat fewer
+      speakers as higher risk. Instead, <strong>larger speaker populations increase the Linguistic
+      pillar</strong>, because the measure represents the potential scale or reach of affected people.
+    </div>
+
+    <div class="note">
       <b>The weights are not fixed in stone.</b> The default weights (above) reflect the project's
       methodology, but the explorer can change them live (for example, raising Crisis Risk during an
       active emergency), and the ranking responds accordingly.
@@ -330,7 +336,8 @@
     <p style="font-size:14px;color:var(--muted)">
       Inside each pillar, the explorer's pillar tabs show a compact formula strip for the subindicators.
       Most subindicators have equal influence before the pillar is rescaled; Language Technology is the
-      exception, because v4 weights each source by data coverage.
+      exception, because sources with broader language coverage count more, while sources that cover only
+      a few languages count less.
     </p>
   </section>
 
@@ -460,7 +467,7 @@
   </section>
 
   <footer>
-    Language &amp; Crisis Risk Index &middot; GMU / CLEAR Global &middot; explorer v0.7 (data v4).
+    Language &amp; Crisis Risk Index &middot; GMU / CLEAR Global &middot; explorer v0.7.
   </footer>
 
 </main>
