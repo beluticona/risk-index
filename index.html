@@ -696,16 +696,6 @@
       }
       .docs-btn:hover { background: #e3eaff; }
 
-      /* ── Interaction hint ── */
-      #hint-bar {
-        border-top: 1px solid var(--border);
-        color: var(--muted);
-        font-size: 11px;
-        margin-top: 6px;
-        padding-top: 5px;
-      }
-      #hint-bar strong { color: var(--text); font-weight: 600; }
-
       #mode-explainer {
         align-items: center;
         background: #f7f9fc;
@@ -1125,9 +1115,9 @@
           </div>
           <div class="mb-chip" id="group-by-chip">
             <span class="pillar-group-label">Group by</span>
-            <button id="btn-group-region"  class="mode-btn active">Region</button>
+            <button id="btn-group-none"    class="mode-btn active">All languages</button>
+            <button id="btn-group-region"  class="mode-btn">Region</button>
             <button id="btn-group-country" class="mode-btn">Country</button>
-            <button id="btn-group-nested"  class="mode-btn">Region › Country</button>
           </div>
           <div class="mb-tabs">
             <div class="mb-chip pillar-group" id="group-language">
@@ -1145,11 +1135,6 @@
         <!-- slider groups injected by JS -->
         <span id="w-total" class="w-total"></span>
         <button id="btn-reset-weights">Reset</button>
-      </div>
-      <div id="hint-bar">
-        <strong>Click a group row</strong> to expand / collapse its languages &nbsp;·&nbsp;
-        <strong>Click a column header</strong> to re-sort &nbsp;·&nbsp;
-        country-level pillars share the same value for all languages in a country
       </div>
       <div id="mode-explainer" hidden></div>
     </header>
@@ -1597,7 +1582,7 @@
       let currentProvider = null;
       let coverageCache = {};
       const lockedWeights = new Set();
-      let groupMode = "region"; // "region" | "country" | "nested"
+      let groupMode = "none"; // "none" | "region" | "country"
       let selectedCountries = new Set(); // empty = all countries; otherwise the focused set
 
       function computeCoverage(records) {
@@ -2064,15 +2049,11 @@
         // Sort by the score shown (composite or indicator), descending.
         if (compCol) ranking.sortBy(compCol, false);
 
-        // Grouping is only meaningful across multiple countries; with exactly one
-        // focused country the list is shown flat (sorted by score).
-        if (selectedCountries.size !== 1) {
-          if (groupMode === "nested") {
-            if (regionCol && countryCol) ranking.groupBy(regionCol, countryCol);
-          } else {
-            const groupCol = groupMode === "country" ? countryCol : regionCol;
-            if (groupCol) ranking.groupBy(groupCol);
-          }
+        // Grouping is optional; with exactly one focused country the list is shown
+        // flat (sorted by score), even if a grouping mode is selected.
+        if (groupMode !== "none" && selectedCountries.size !== 1) {
+          const groupCol = groupMode === "country" ? countryCol : regionCol;
+          if (groupCol) ranking.groupBy(groupCol);
         }
 
         const aggCol = ranking.find((c) => c.desc && c.desc.type === "aggregate");
@@ -2520,11 +2501,11 @@
         setPillarInfoCollapsed(!pillarInfoCollapsed);
       });
 
-      // Group-by toggle (Region / Country / Region › Country)
+      // Group-by toggle (All languages / Region / Country)
       const GROUP_BTNS = {
+        none:    "btn-group-none",
         region:  "btn-group-region",
         country: "btn-group-country",
-        nested:  "btn-group-nested",
       };
       function selectGroupMode(mode) {
         if (groupMode === mode) return;
