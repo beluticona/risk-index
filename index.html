@@ -160,6 +160,31 @@
         overflow: hidden;
       }
 
+      /* lineupengine reserves the scrollbar width as padding-left on the header
+         wrapper, but the body has no matching left inset, so body columns end up
+         shifted left of their headers. Drop it so the two line up. */
+      #lineup .le-header { padding-left: 0 !important; }
+
+      /* LineUp rows/cells use `transition: all .5s` (for scroll/enter animations),
+         which also animates the hover highlight, making the yellow background lag
+         behind the cursor. Keep the layout animations but make colour instant. */
+      #lineup .le-tr,
+      #lineup .le-td { transition-property: transform, opacity, height, width; }
+
+      /* Title for LineUp's built-in tools panel (shown when it is expanded) */
+      #lineup .lu-panel-title {
+        border-bottom: 1px solid var(--border);
+        margin-bottom: 6px;
+        padding: 8px 10px;
+      }
+      #lineup .lu-panel-title strong { display: block; font-size: 13px; }
+      #lineup .lu-panel-title span {
+        color: var(--muted);
+        display: block;
+        font-size: 11px;
+        margin-top: 2px;
+      }
+
       /* ── Side panel ── */
       #side-panel {
         background: var(--panel);
@@ -188,6 +213,16 @@
         border-bottom: 1px solid var(--border);
         padding: 14px 16px 12px;
         position: relative;
+      }
+
+      .panel-title {
+        color: var(--muted);
+        display: block;
+        font-size: 10px;
+        font-weight: 700;
+        letter-spacing: 0.07em;
+        margin-bottom: 8px;
+        text-transform: uppercase;
       }
 
       .panel-lang {
@@ -581,6 +616,15 @@
         align-items: center;
         display: flex;
         gap: 6px;
+      }
+
+      /* Keep the language-level and country-level chips together on one row;
+         they wrap as a single unit rather than splitting across lines. */
+      .mb-tabs {
+        align-items: center;
+        display: flex;
+        flex-wrap: nowrap;
+        gap: 6px 8px;
       }
 
       .mb-chip.disabled { opacity: 0.45; pointer-events: none; }
@@ -1049,11 +1093,13 @@
             <button id="btn-group-country" class="mode-btn">Country</button>
             <button id="btn-group-nested"  class="mode-btn">Region › Country</button>
           </div>
-          <div class="mb-chip pillar-group" id="group-language">
-            <span class="pillar-group-label">language-level</span>
-          </div>
-          <div class="mb-chip pillar-group" id="group-country">
-            <span class="pillar-group-label">country-level</span>
+          <div class="mb-tabs">
+            <div class="mb-chip pillar-group" id="group-language">
+              <span class="pillar-group-label">language-level</span>
+            </div>
+            <div class="mb-chip pillar-group" id="group-country">
+              <span class="pillar-group-label">country-level</span>
+            </div>
           </div>
         </div>
       </div>
@@ -1925,7 +1971,7 @@
           column: "__display_score",
           type: "string",
           label: pillar ? "Indicator score" : "Composite score",
-          width: px(70),
+          width: px(170),
         });
 
         const container = document.querySelector("#lineup");
@@ -1989,8 +2035,22 @@
           rowHeight: px(24),
           groupHeight: px(48),
           renderers: { composition: compositionRenderer },
+          sidePanel: true,
+          sidePanelCollapsed: true, // LineUp's column-tools panel starts collapsed
         });
         lineup.update();
+
+        // Title the LineUp tools panel so its purpose is clear when expanded.
+        const sidePanel = container.querySelector(".lu-side-panel");
+        if (sidePanel && !sidePanel.querySelector(":scope > .lu-panel-title")) {
+          const title = document.createElement("div");
+          title.className = "lu-panel-title";
+          title.innerHTML =
+            "<strong>Table tools</strong>" +
+            "<span>Add or remove columns, search, change grouping &amp; sorting, " +
+            "and view each column's distribution.</span>";
+          sidePanel.insertBefore(title, sidePanel.firstChild);
+        }
 
         // Row selection → side panel
         provider.on("selectionChanged", (indices) => {
@@ -2345,6 +2405,7 @@
         return `
           <div class="panel-top">
             <button class="close-btn" onclick="hideSidePanel()" title="Close">×</button>
+            <span class="panel-title">Language detail</span>
             <span class="panel-lang">${record.language_name ?? "n/a"}</span>
             <span class="panel-country">${record.location_name ?? "n/a"}</span>
             <div class="panel-meta">
