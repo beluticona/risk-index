@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Language &amp; Crisis Risk Index · About</title>
+<style>
+  :root {
+    --ink: #1f2933;
+    --muted: #5b6775;
+    --line: #e3e7ee;
+    --bg: #f6f8fb;
+    --card: #ffffff;
+    --accent: #276ef1;
+    --p1: #3498db;  /* Linguistic    */
+    --p2: #e74c3c;  /* Crisis Risk   */
+    --p3: #9b59b6;  /* Comms & Tech  */
+    --p4: #1abc9c;  /* Language Tech */
+    --p5: #f39c12;  /* Social & Econ */
+  }
+  * , *::before, *::after { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0; color: var(--ink); background: var(--bg);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    font-size: 16px; line-height: 1.65;
+  }
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+
+  /* Sticky top bar */
+  header.bar {
+    position: sticky; top: 0; z-index: 10;
+    background: rgba(255,255,255,0.92); backdrop-filter: blur(6px);
+    border-bottom: 1px solid var(--line);
+  }
+  .bar-inner {
+    max-width: 980px; margin: 0 auto; padding: 12px 24px;
+    display: flex; align-items: center; gap: 18px; flex-wrap: wrap;
+  }
+  .bar-title { font-size: 14px; font-weight: 700; white-space: nowrap; }
+  .bar-nav { display: flex; gap: 16px; flex-wrap: wrap; font-size: 13px; }
+  .bar-nav a { color: var(--muted); font-weight: 600; }
+  .bar-nav a:hover { color: var(--ink); text-decoration: none; }
+  .bar-spacer { flex: 1; }
+  .bar-cta {
+    background: var(--accent); color: #fff; border-radius: 6px;
+    padding: 6px 12px; font-size: 13px; font-weight: 600; white-space: nowrap;
+  }
+  .bar-cta:hover { background: #1f5fd6; text-decoration: none; }
+
+  main { max-width: 980px; margin: 0 auto; padding: 0 24px 80px; }
+
+  /* Hero */
+  .hero { padding: 52px 0 8px; }
+  .hero .eyebrow {
+    color: var(--accent); font-weight: 700; font-size: 13px;
+    letter-spacing: 0.08em; text-transform: uppercase;
+  }
+  .hero h1 { font-size: 34px; line-height: 1.2; margin: 8px 0 14px; }
+  .hero p.lead { font-size: 18px; color: var(--muted); max-width: 760px; margin: 0; }
+
+  .stat-row { display: flex; gap: 14px; flex-wrap: wrap; margin: 28px 0 8px; }
+  .stat {
+    background: var(--card); border: 1px solid var(--line); border-radius: 10px;
+    padding: 14px 18px; min-width: 120px;
+  }
+  .stat b { display: block; font-size: 24px; }
+  .stat span { font-size: 13px; color: var(--muted); }
+
+  section { padding: 30px 0; border-top: 1px solid var(--line); margin-top: 26px; }
+  h2 { font-size: 24px; margin: 0 0 6px; }
+  h2 + .sub { color: var(--muted); margin: 0 0 18px; font-size: 15px; }
+  h3 { font-size: 17px; margin: 26px 0 8px; }
+  p { margin: 0 0 14px; }
+
+  /* Pillar cards */
+  .pillars { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 14px; margin: 20px 0; }
+  .pcard {
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    padding: 16px 16px 18px; border-top: 5px solid var(--c);
+  }
+  .pcard .pw { font-size: 30px; font-weight: 800; color: var(--c); line-height: 1; }
+  .pcard .pn { font-weight: 700; margin: 8px 0 2px; }
+  .pcard .pd { font-size: 13px; color: var(--muted); }
+  .pcard .lvl {
+    display: inline-block; margin-top: 10px; font-size: 10px; font-weight: 700;
+    letter-spacing: 0.05em; text-transform: uppercase; color: var(--muted);
+    background: #eef1f6; border-radius: 4px; padding: 2px 7px;
+  }
+
+  /* Generic table */
+  table { width: 100%; border-collapse: collapse; background: var(--card);
+          border: 1px solid var(--line); border-radius: 10px; overflow: hidden; margin: 14px 0; }
+  th { background: #f0f3f8; text-align: left; font-size: 12px; letter-spacing: 0.03em;
+       text-transform: uppercase; color: var(--muted); padding: 10px 14px; }
+  td { padding: 11px 14px; font-size: 14px; border-top: 1px solid var(--line); vertical-align: top; }
+  td .swatch { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 7px; vertical-align: baseline; }
+
+  /* Callouts */
+  .note { border-left: 4px solid var(--accent); background: #eef4ff;
+          padding: 14px 18px; border-radius: 0 8px 8px 0; margin: 18px 0; font-size: 15px; }
+  .note.warn { border-color: var(--p5); background: #fef8ec; }
+  .note.caution { border-color: var(--p2); background: #fdeeec; }
+  .note b { color: var(--ink); }
+
+  /* Score recipe */
+  .recipe { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px,1fr)); gap: 0; margin: 22px 0; }
+  .rstep { background: var(--card); border: 1px solid var(--line); padding: 16px; position: relative; }
+  .rstep:not(:last-child)::after {
+    content: "\2192"; position: absolute; right: -11px; top: 50%; transform: translateY(-50%);
+    color: #b9c2d0; font-size: 20px; z-index: 2; background: var(--bg); padding: 0 1px;
+  }
+  .rstep .num { font-size: 12px; font-weight: 700; color: var(--accent); }
+  .rstep .t { font-weight: 700; font-size: 14px; margin: 4px 0 4px; }
+  .rstep .d { font-size: 13px; color: var(--muted); }
+  .rstep:first-child { border-radius: 10px 0 0 10px; }
+  .rstep:last-child  { border-radius: 0 10px 10px 0; }
+
+  /* Feature list */
+  .feature { display: flex; gap: 14px; align-items: flex-start; margin: 16px 0; }
+  .feature .ic { font-size: 20px; line-height: 1.4; flex-shrink: 0; width: 26px; text-align: center; }
+  .feature .ft { font-weight: 700; }
+  .feature .fd { color: var(--muted); font-size: 14px; }
+
+  .bar-demo { display: flex; height: 26px; border-radius: 5px; overflow: hidden; max-width: 460px;
+              margin: 6px 0 4px; border: 1px solid var(--line); font-size: 11px; font-weight: 700; color: #fff; }
+  .bar-demo span { display: flex; align-items: center; justify-content: center; }
+
+  .idea { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 16px 18px; margin: 12px 0; }
+  .idea b { display: block; margin-bottom: 3px; }
+  .idea span { color: var(--muted); font-size: 14px; }
+
+  footer { color: var(--muted); font-size: 13px; padding: 30px 0 0; border-top: 1px solid var(--line); margin-top: 30px; }
+
+  @media (max-width: 640px) {
+    .hero h1 { font-size: 27px; }
+    .rstep:not(:last-child)::after { display: none; }
+    .recipe .rstep { border-radius: 10px; margin-bottom: 10px; }
+  }
+</style>
+</head>
+<body>
+
+<header class="bar">
+  <div class="bar-inner">
+    <span class="bar-title">Language &amp; Crisis Risk Index</span>
+    <nav class="bar-nav">
+      <a href="#measure">What it measures</a>
+      <a href="#data">Data</a>
+      <a href="#scoring">Scoring</a>
+      <a href="#reliability">Reliability</a>
+      <a href="#tool">The explorer</a>
+      <a href="#ideas">Ideas</a>
+    </nav>
+    <span class="bar-spacer"></span>
+    <a class="bar-cta" href="../">Open the explorer &#8599;</a>
+  </div>
+</header>
+
+<main>
+
+  <!-- HERO -->
+  <div class="hero">
+    <div class="eyebrow">GMU &middot; CLEAR Global</div>
+    <h1>Which language communities are most at risk in a crisis?</h1>
+    <p class="lead">
+      The Language &amp; Crisis Risk Index is a single score that highlights the linguistic
+      communities most likely to be cut off from information and help during a humanitarian
+      emergency, because they have few speakers, little digital language support, and live where
+      crises are active. A <strong>higher score means higher risk</strong>.
+    </p>
+    <div class="stat-row">
+      <div class="stat"><b>755</b><span>language&ndash;country pairs</span></div>
+      <div class="stat"><b>673</b><span>languages</span></div>
+      <div class="stat"><b>48</b><span>countries</span></div>
+      <div class="stat"><b>5</b><span>indicator groups</span></div>
+    </div>
+  </div>
+
+  <!-- WHAT IT MEASURES -->
+  <section id="measure">
+    <h2>What the index measures</h2>
+    <p class="sub">Every row is a language in a specific country, for example Dari in Afghanistan, or Chokwe in Zambia.</p>
+    <p>
+      Each pair is scored from 0 to 1 by combining five groups of indicators (the index's
+      <em>pillars</em>). Each pillar answers a different question about risk, and each carries a
+      weight reflecting how much it counts toward the final score.
+    </p>
+
+    <div class="pillars">
+      <div class="pcard" style="--c:var(--p1)">
+        <div class="pw">20%</div>
+        <div class="pn">Linguistic</div>
+        <div class="pd">How small and how distinct the language community is.</div>
+        <div class="lvl">per language</div>
+      </div>
+      <div class="pcard" style="--c:var(--p2)">
+        <div class="pw">25%</div>
+        <div class="pn">Crisis Risk</div>
+        <div class="pd">Severity and number of active humanitarian crises in the country.</div>
+        <div class="lvl">per country</div>
+      </div>
+      <div class="pcard" style="--c:var(--p3)">
+        <div class="pw">15%</div>
+        <div class="pn">Comms &amp; Technology</div>
+        <div class="pd">How connected the country is: internet access and digital infrastructure.</div>
+        <div class="lvl">per country</div>
+      </div>
+      <div class="pcard" style="--c:var(--p4)">
+        <div class="pw">25%</div>
+        <div class="pn">Language Technology</div>
+        <div class="pd">Whether digital tools exist <em>in</em> the language (translation, datasets, Wikipedia&hellip;).</div>
+        <div class="lvl">per language</div>
+      </div>
+      <div class="pcard" style="--c:var(--p5)">
+        <div class="pw">15%</div>
+        <div class="pn">Social &amp; Economic</div>
+        <div class="pd">Wealth, education and literacy that shape a country's crisis-response capacity.</div>
+        <div class="lvl">per country</div>
+      </div>
+    </div>
+
+    <div class="note">
+      <b>The index measures need, not capacity.</b> Support measures are <em>flipped</em>: a
+      language with no translation tools, or a country with low connectivity, scores
+      <strong>higher</strong> (more vulnerable), because the absence of support is exactly the risk.
+    </div>
+
+    <p style="font-size:14px;color:var(--muted)">
+      <span class="lvl" style="background:#eef1f6">per language</span>
+      indicators differ between languages.
+      <span class="lvl" style="background:#eef1f6">per country</span>
+      indicators are the same for every language spoken in that country.
+    </p>
+  </section>
+
+  <!-- DATA -->
+  <section id="data">
+    <h2>Where the data comes from</h2>
+    <p class="sub">19 source files from established public datasets, refreshed at different cadences.</p>
+    <p>
+      Every indicator traces back to a recognised provider: the UN, the World Bank, UNESCO,
+      the ITU, and major open technology platforms.
+    </p>
+
+    <table>
+      <thead><tr><th>Pillar</th><th>Indicators used</th><th>Sources</th><th>Refreshed</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><span class="swatch" style="background:var(--p1)"></span><strong>Linguistic</strong></td>
+          <td>Speaker population, Linguistic Diversity Index</td>
+          <td>IPUMS / UNFPA census data, UNESCO</td>
+          <td>~10-year census cycles</td>
+        </tr>
+        <tr>
+          <td><span class="swatch" style="background:var(--p2)"></span><strong>Crisis Risk</strong></td>
+          <td>Crisis severity, active risks, crisis driver types</td>
+          <td><a href="https://www.inform-index.org" target="_blank">INFORM / ReliefWeb</a>,
+              <a href="https://www.acaps.org/en/thematics/risk-list" target="_blank">ACAPS</a></td>
+          <td>Monthly, weekly</td>
+        </tr>
+        <tr>
+          <td><span class="swatch" style="background:var(--p3)"></span><strong>Comms &amp; Tech</strong></td>
+          <td>Meaningful connectivity, digital language support, app accessibility, ICT development</td>
+          <td><a href="https://www.mobileconnectivityindex.com" target="_blank">GSMA / A4AI</a>,
+              <a href="https://www.itu.int/en/ITU-D/Statistics/Pages/IDI/default.aspx" target="_blank">ITU</a></td>
+          <td>Annual</td>
+        </tr>
+        <tr>
+          <td><span class="swatch" style="background:var(--p4)"></span><strong>Language Tech</strong></td>
+          <td>Speech hours, Wikipedia articles &amp; editors, datasets &amp; models, translation support</td>
+          <td><a href="https://commonvoice.mozilla.org/en/languages" target="_blank">Mozilla Common Voice</a>,
+              <a href="https://meta.wikimedia.org/wiki/List_of_Wikipedias" target="_blank">Wikimedia</a>,
+              <a href="https://huggingface.co" target="_blank">Hugging Face</a>, Google Translate</td>
+          <td>Continuous (snapshots)</td>
+        </tr>
+        <tr>
+          <td><span class="swatch" style="background:var(--p5)"></span><strong>Social &amp; Econ</strong></td>
+          <td>GDP per capita, inequality-adjusted human development, education, literacy</td>
+          <td><a href="https://data.worldbank.org/indicator/NY.GDP.PCAP.CD" target="_blank">World Bank</a>,
+              <a href="https://hdr.undp.org" target="_blank">UNDP</a>, UNESCO</td>
+          <td>Annual</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <p style="font-size:14px;color:var(--muted)">
+      A built-in audit checks all 19 files and their reference links: at last run, 19 of 19 files were
+      healthy and no links were broken (a few download pages block automated checks but remain
+      accessible in a browser).
+    </p>
+  </section>
+
+  <!-- SCORING -->
+  <section id="scoring">
+    <h2>How a score is built</h2>
+    <p class="sub">Four plain steps turn raw numbers into one comparable score per language&ndash;country pair.</p>
+
+    <div class="recipe">
+      <div class="rstep">
+        <div class="num">STEP 1</div>
+        <div class="t">Put everything on one scale</div>
+        <div class="d">Each raw measure is rescaled to a 0&ndash;1 range so speaker counts, dollars and percentages can be compared.</div>
+      </div>
+      <div class="rstep">
+        <div class="num">STEP 2</div>
+        <div class="t">Flip the support measures</div>
+        <div class="d">For tools, wealth and connectivity, "more" means "less risk", so those are inverted before combining.</div>
+      </div>
+      <div class="rstep">
+        <div class="num">STEP 3</div>
+        <div class="t">Combine into 5 pillars</div>
+        <div class="d">The measures in each pillar are pooled into a single 0&ndash;1 pillar score.</div>
+      </div>
+      <div class="rstep">
+        <div class="num">STEP 4</div>
+        <div class="t">Weight &amp; add up</div>
+        <div class="d">The 5 pillars are blended by their weights into the final 0&ndash;1 risk score used for the ranking.</div>
+      </div>
+    </div>
+
+    <p>
+      In other words: <strong>final score = (each pillar score &times; its weight), added together</strong>.
+      Because the rescaling in Step 1 compares each language&ndash;country pair against all the others,
+      the score is <em>relative</em>: it indicates which communities are most at risk within this set of
+      755 pairs, rather than an absolute probability.
+    </p>
+
+    <div class="note">
+      <b>The weights are not fixed in stone.</b> The default weights (above) reflect the project's
+      methodology, but the explorer can change them live (for example, raising Crisis Risk during an
+      active emergency), and the ranking responds accordingly.
+    </div>
+  </section>
+
+  <!-- RELIABILITY -->
+  <section id="reliability">
+    <h2>How reliable is it?</h2>
+    <p class="sub">The index is a screening tool. A few things are important to read responsibly.</p>
+
+    <h3>Missing data is treated as "no support"</h3>
+    <p>
+      When a figure is missing, it is filled in as zero before scoring. For support measures (most of
+      the index) this is cautious: a language with no recorded translation tools is counted as having
+      none. But for crisis measures it can <em>under</em>-state risk: a peaceful, high-income country
+      that simply isn't tracked by crisis monitors will look safer than it is. Low crisis scores for
+      small, well-off countries should therefore be treated with care.
+    </p>
+
+    <h3>Some pillars are shared across a country</h3>
+    <p>
+      Crisis, Comms &amp; Tech, and Social &amp; Economic data describe the <em>country</em>, so every
+      language in that country shares those values. Only the Linguistic and Language Technology pillars
+      vary language by language.
+    </p>
+
+    <div class="note caution">
+      <b>Known limitation: Language Technology.</b> Most of the world's languages have almost no
+      digital presence, so this pillar reads "high risk" for the large majority of communities. The
+      scaling was improved so it now separates the better-resourced languages, but five of its seven
+      measures only have data for fewer than ~140 of the 755 pairs. As a result the pillar still
+      clusters near the top of the scale and is better at spotting the few <em>well</em>-resourced
+      languages than at finely ranking the many under-resourced ones. Improving this is an active area
+      of work.
+    </div>
+
+    <p style="font-size:14px;color:var(--muted)">
+      The explorer has a built-in <strong>Data reliability</strong> panel that shows, for every
+      measure, how much of the data is actually present, and in which regions, so the reliability of a
+      given score can be judged.
+    </p>
+  </section>
+
+  <!-- THE TOOL -->
+  <section id="tool">
+    <h2>The explorer tool</h2>
+    <p class="sub">An interactive ranking of all 755 pairs, designed to be read at a glance and interrogated in depth.</p>
+
+    <h3>Reading a row: the composition bar</h3>
+    <p>
+      Instead of a single number, each row shows one <strong>composition bar</strong>. The bar is split
+      into coloured segments (one per pillar), and the length of each segment is that pillar's
+      contribution to the score (its value &times; its weight). The segments add up to the row's total
+      score, making it clear <em>why</em> a community ranks where it does, not only that it does.
+    </p>
+    <div class="bar-demo">
+      <span style="background:var(--p1);flex:0 0 16%">Ling</span>
+      <span style="background:var(--p2);flex:0 0 24%">Crisis</span>
+      <span style="background:var(--p3);flex:0 0 13%">Comms</span>
+      <span style="background:var(--p4);flex:0 0 25%">Lang&nbsp;Tech</span>
+      <span style="background:var(--p5);flex:0 0 14%">Social</span>
+    </div>
+    <p style="font-size:13px;color:var(--muted);margin-top:2px">Illustrative: segment lengths reflect each pillar's weighted contribution.</p>
+
+    <div class="feature">
+      <div class="ic">&#127911;</div>
+      <div><div class="ft">Adjustable weights</div>
+        <div class="fd">Sliders re-prioritise the pillars (e.g. crisis-first), and any pillar can be locked in place; the ranking and every bar update instantly.</div></div>
+    </div>
+    <div class="feature">
+      <div class="ic">&#128270;</div>
+      <div><div class="ft">Overview vs. indicator tabs</div>
+        <div class="fd">The overview ranks by the overall <strong>composite score</strong>. An indicator tab (e.g. Language Technology) ranks by that single <strong>indicator score</strong> and breaks its sub-measures down the same way.</div></div>
+    </div>
+    <div class="feature">
+      <div class="ic">&#128205;</div>
+      <div><div class="ft">Focus on selected countries</div>
+        <div class="fd">A multi-select picker pins any number of countries; the ranking narrows to their languages, and the selection stays in place while moving between the overview and every indicator tab.</div></div>
+    </div>
+    <div class="feature">
+      <div class="ic">&#128451;</div>
+      <div><div class="ft">Grouping by region or country</div>
+        <div class="fd">The list can be collapsed into continents or countries to compare whole groups, then expanded to the individual languages.</div></div>
+    </div>
+    <div class="feature">
+      <div class="ic">&#128203;</div>
+      <div><div class="ft">Full detail on any row</div>
+        <div class="fd">Selecting a row opens a detail panel showing every raw value, how it was rescaled, and its contribution, with links back to the original source for each measure.</div></div>
+    </div>
+    <div class="feature">
+      <div class="ic">&#129658;</div>
+      <div><div class="ft">The data behind each score</div>
+        <div class="fd">The Data reliability panel and the per-indicator details card expose coverage, sources, update frequency and how missing data biases each measure.</div></div>
+    </div>
+    <div class="feature">
+      <div class="ic">&#129520;</div>
+      <div><div class="ft">Table tools (optional, collapsed by default)</div>
+        <div class="fd">A "Table tools" panel on the right edge offers advanced controls for users who want them: add or remove columns, search, change grouping and sorting, and view each column's distribution. It stays collapsed by default so the curated view stays uncluttered, and expands on click.</div></div>
+    </div>
+  </section>
+
+  <!-- IDEAS -->
+  <section id="ideas">
+    <h2>Where the tool could go next</h2>
+    <p class="sub">Design directions under consideration. Feedback welcome.</p>
+
+    <div class="idea">
+      <b>A map view</b>
+      <span>Show the ranking geographically, so funders can see where high-risk communities cluster and how risk varies across a region.</span>
+    </div>
+    <div class="idea">
+      <b>Saved priority profiles</b>
+      <span>One-click weight presets for different perspectives ("crisis responder", "language-technology funder", "balanced"), so stakeholders can compare how each lens reorders the list.</span>
+    </div>
+    <div class="idea">
+      <b>Confidence on each score</b>
+      <span>Pair every score with a visible reliability band, drawn from how much underlying data is actually present, so users know which rankings are solid and which are tentative.</span>
+    </div>
+    <div class="idea">
+      <b>Plain-language summaries</b>
+      <span>An assistant that explains, in a sentence or two, why a given community ranks where it does and what would change its position, grounded in the real numbers.</span>
+    </div>
+    <div class="idea">
+      <b>Stronger Language Technology signal</b>
+      <span>Refine how the language-technology pillar is built so it discriminates among under-resourced languages instead of grouping most of them together (see the limitation above).</span>
+    </div>
+  </section>
+
+  <footer>
+    Language &amp; Crisis Risk Index &middot; GMU / CLEAR Global &middot; explorer v0.6.3 (data v3).
+  </footer>
+
+</main>
+</body>
+</html>
