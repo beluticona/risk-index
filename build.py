@@ -18,7 +18,7 @@ except ImportError:
     sys.exit("pandas required: pip install pandas openpyxl")
 
 HERE  = Path(__file__).parent
-DATA  = HERE / "data" / "Final_Index_v3.xlsx"
+DATA  = HERE / "data" / "Final_Index_v4.xlsx"
 SHEET = "original_index"
 DIST  = HERE / "dist"
 

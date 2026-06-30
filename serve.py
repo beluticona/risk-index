@@ -25,7 +25,7 @@ class ExplorerHandler(BaseHTTPRequestHandler):
 
     def _serve_csv(self):
         """Convert the index workbook → CSV on-the-fly for local dev."""
-        xlsx = DATA_ROOT / "Final_Index_v3.xlsx"
+        xlsx = DATA_ROOT / "Final_Index_v4.xlsx"
         if not xlsx.exists():
             self.send_error(404, f"Data file not found: {xlsx}")
             return
