@@ -357,12 +357,14 @@
 
     <div class="note caution">
       <b>Known limitation: Language Technology.</b> Most of the world's languages have almost no
-      digital presence, so this pillar reads "high risk" for the large majority of communities. The
-      scaling was improved so it now separates the better-resourced languages, but five of its seven
-      measures only have data for fewer than ~140 of the 755 pairs. As a result the pillar still
-      clusters near the top of the scale and is better at spotting the few <em>well</em>-resourced
-      languages than at finely ranking the many under-resourced ones. Improving this is an active area
-      of work.
+      digital presence, so this pillar leans toward "high risk" for the majority of communities. Two
+      steps reduce the bunching: the resource counts are log-scaled, and each measure is then
+      weighted by its coverage, so near-empty sources (Common Voice ~9%, Google Translate ~10%,
+      Wikipedia ~18%) count less than the better-covered ones (HuggingFace ~72%). Together these
+      roughly halve the share of communities pinned near the top. A genuine floor remains: about a
+      quarter of the pairs have zero recorded resources across every measure, so they tie at maximum
+      tech-vulnerability and only new data sources could separate them. Strengthening this pillar is
+      an active area of work.
     </div>
 
     <p style="font-size:14px;color:var(--muted)">
@@ -458,7 +460,7 @@
   </section>
 
   <footer>
-    Language &amp; Crisis Risk Index &middot; GMU / CLEAR Global &middot; explorer v0.6.3 (data v3).
+    Language &amp; Crisis Risk Index &middot; GMU / CLEAR Global &middot; explorer v0.7 (data v4).
   </footer>
 
 </main>
